@@ -3,8 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Directory | CrewBoard</title>
-<meta name="description" content="Search freelancers in entertainment and sports by role, skill, city and day rate.">
+<title>Find Freelancers | CrewBoard</title>
+<meta name="description" content="Search freelancers in entertainment and sports by role, skill, city and day rate. Free to browse.">
+<link rel="canonical" href="https://crewboard.fit/directory.html">
+<meta property="og:title" content="Find Freelancers | CrewBoard">
+<meta property="og:description" content="Search freelancers in entertainment and sports by role, skill, city and day rate. Free to browse.">
+<meta property="og:url" content="https://crewboard.fit/directory.html">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0a1a2f">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff6b2c'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -94,7 +100,7 @@
       </div>
     </div>
     <p class="disclaimer"><b>CrewBoard is a directory, not an employer.</b> We do not employ freelancers, handle pay, or manage contracts or worker classification. Rates and availability are supplied by freelancers themselves. Always confirm credentials, insurance and union status directly before booking.</p>
-    <p class="disclaimer">&copy; 2026 CrewBoard. All rights reserved.</p>
+    <p class="disclaimer">&copy; 2026 CrewBoard &middot; crewboard.fit</p>
   </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -146,8 +152,7 @@ window.addEventListener("DOMContentLoaded", function(){
   if (!configured){
     var b = document.createElement("div");
     b.className = "wrap";
-    b.innerHTML = '<div class="warn"><b>Almost ready:</b> the database key has not been added yet. ' +
-      'Open <code>config.js</code> and paste your Supabase publishable key where it says PASTE_YOUR_PUBLISHABLE_KEY_HERE.</div>';
+    b.innerHTML = '<div class="warn"><b>Almost ready:</b> the database connection is being set up. Please check back shortly.</div>';
     document.body.insertBefore(b, document.body.children[1] || null);
   }
   wireAuthSlot();
@@ -260,7 +265,7 @@ async function loadProfiles(){
   if (!sb){
     document.getElementById("count").textContent = "";
     document.getElementById("results").innerHTML =
-      '<p class="muted">The directory switches on once the database key is added.</p>';
+      '<p class="muted">The directory switches on once the database connection is ready.</p>';
     return;
   }
   var u = await currentUser();
@@ -318,6 +323,7 @@ document.getElementById("bookForm").onsubmit = async function(e){
 document.getElementById("fRole").innerHTML = '<option value="">All roles</option>' + roleGroups();
 ["fRole","fCity","fSkill","fRate","fAvail","fMulti","fUnion"].forEach(function(id){
   var el = document.getElementById(id);
+  if (!el) return;
   el.addEventListener("input", renderRows);
   el.addEventListener("change", renderRows);
 });
