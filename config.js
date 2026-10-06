@@ -14,4 +14,4 @@
 // ------------------------------------------------------------------
 
 window.SB_URL = "https://apnjwbhwigkvhyiiynaas.supabase.co";
-window.SB_KEY = "PASTE_YOUR_PUBLISHABLE_KEY_HERE";
+window.SB_KEY = "sb_publishable_d6P3dt_qVYkw71eebA3dBg_zNTUsJSX";
