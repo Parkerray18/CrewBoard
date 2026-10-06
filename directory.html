@@ -16,6 +16,7 @@
       <a href="index.html">Home</a>
       <a class="opt-link" href="directory.html">Directory</a>
       <a class="opt-link" href="edit-profile.html">My Profile</a>
+      <a class="opt-link" href="requests.html">Requests</a>
       <span id="authSlot"></span>
     </nav>
   </div>
@@ -24,7 +25,8 @@
 <section class="wrap">
   <p class="eyebrow">Search the directory</p>
   <h2>Find freelancers</h2>
-  <p class="muted">Live profiles from freelancers who have signed up. Search a skill and everyone who lists it appears, even if it is not their main job.</p>
+  <p class="muted">Browsing is free for everyone. Sending a booking request requires a company account on an active plan.</p>
+  <p class="muted">Search a skill and everyone who lists it appears, even if it is not their main job.</p>
   <div class="panelbar">
     <div class="filters">
       <select id="fRole"><option value="">All roles</option></select>
@@ -40,6 +42,35 @@
   <div id="results" class="grid"></div>
 </section>
 
+<div id="bookModal" class="modal hidden">
+  <div class="modal-box">
+    <button id="bookClose" class="x" aria-label="Close">&times;</button>
+    <h3 id="bookTitle">Send booking request</h3>
+    <p class="muted" id="bookTo"></p>
+    <form id="bookForm" class="form">
+      <label class="fld">Event name
+        <input name="event_name" placeholder="e.g. NBA game, festival" required>
+      </label>
+      <div class="two">
+        <label class="fld">Date
+          <input name="event_date" type="date" required>
+        </label>
+        <label class="fld">Venue / city
+          <input name="location" placeholder="e.g. Arena, Dallas" required>
+        </label>
+      </div>
+      <label class="fld">Offered day rate ($) <span class="opt">optional</span>
+        <input name="offered_rate" type="number" min="0" placeholder="e.g. 500">
+      </label>
+      <label class="fld">Message
+        <textarea name="message" rows="3" placeholder="Role needed, call times, anything else useful"></textarea>
+      </label>
+      <button class="btn" type="submit" id="bookSend">Send request</button>
+      <p id="bookMsg" class="muted"></p>
+    </form>
+  </div>
+</div>
+
 <footer>
   <div class="wrap">
     <div class="foot-grid">
@@ -53,10 +84,12 @@
         <p><a href="signup.html">Create a free profile</a></p>
         <p><a href="directory.html">See the directory</a></p>
         <p><a href="edit-profile.html">Edit my profile</a></p>
+        <p><a href="requests.html">Booking requests</a></p>
       </div>
       <div>
         <h4>Companies</h4>
-        <p><a href="company.html">Start a free trial</a></p>
+        <p><a href="company-signup.html">Register your company</a></p>
+        <p><a href="company-login.html">Company login</a></p>
         <p><a href="index.html#pricing">See pricing</a></p>
       </div>
     </div>
@@ -114,8 +147,7 @@ window.addEventListener("DOMContentLoaded", function(){
     var b = document.createElement("div");
     b.className = "wrap";
     b.innerHTML = '<div class="warn"><b>Almost ready:</b> the database key has not been added yet. ' +
-      'Open <code>config.js</code> and paste your Supabase publishable key where it says PASTE_YOUR_PUBLISHABLE_KEY_HERE. ' +
-      'Until then, sign-ups and the directory are switched off.</div>';
+      'Open <code>config.js</code> and paste your Supabase publishable key where it says PASTE_YOUR_PUBLISHABLE_KEY_HERE.</div>';
     document.body.insertBefore(b, document.body.children[1] || null);
   }
   wireAuthSlot();
@@ -143,9 +175,24 @@ async function wireAuthSlot(){
     slot.innerHTML = '<a href="signup.html">Sign up</a> <a href="login.html">Log in</a>';
   }
 }
+
+async function currentCompany(){
+  if (!sb) return null;
+  var u = await currentUser();
+  if (!u) return null;
+  var r = await sb.from("companies").select("*").eq("id", u.id).maybeSingle();
+  return r.data || null;
+}
+
+async function isPayingCompany(){
+  var c = await currentCompany();
+  return !!(c && c.paid);
+}
 </script>
 <script>
 var ROWS = [];
+var COMPANY = null;
+var TARGET = null;
 
 function renderRows(){
   var role = document.getElementById("fRole").value;
@@ -173,6 +220,8 @@ function renderRows(){
   document.getElementById("count").textContent =
     list.length + " freelancer" + (list.length === 1 ? "" : "s") + " found";
 
+  var canSend = !!(COMPANY && COMPANY.paid);
+
   if (!list.length){
     document.getElementById("results").innerHTML =
       '<p class="muted">No matches yet. Try widening your filters' +
@@ -182,6 +231,7 @@ function renderRows(){
 
   document.getElementById("results").innerHTML = list.map(function(p){
     var initials = String(p.name || "?").split(" ").map(function(x){ return x[0]; }).join("").slice(0,2);
+    var safeName = String(p.name || "").replace(/'/g, "");
     var c = '<div class="card">';
     c += '<div class="card-top"><div class="avatar">' + esc(initials) + '</div>';
     c += '<div><h3>' + esc(p.name) + '</h3><span class="muted">' + esc(p.city || "Location not set") + '</span></div>';
@@ -195,6 +245,12 @@ function renderRows(){
     if (p.gear) c += '<p><b>Gear:</b> ' + esc(p.gear) + '</p>';
     if (p.credits) c += '<p><b>Credits:</b> ' + esc(p.credits) + '</p>';
     if (p.miles) c += '<p>Travels up to ' + esc(p.miles) + ' miles</p>';
+    if (canSend){
+      c += '<button class="btn" onclick="openBook(\'' + p.id + '\',\'' + safeName + '\')">Request booking</button>';
+    } else {
+      c += '<p class="muted">Sending a request needs a company account on an active plan.</p>';
+      c += '<a class="btn sec" href="company-signup.html">Register your company</a>';
+    }
     c += '</div>';
     return c;
   }).join("");
@@ -207,15 +263,57 @@ async function loadProfiles(){
       '<p class="muted">The directory switches on once the database key is added.</p>';
     return;
   }
-  var r = await sb.from("profiles").select("*").order("created_at", { ascending: false });
+  var u = await currentUser();
+  if (u) COMPANY = await currentCompany();
+  var r = await sb.from("profiles_public").select("*").order("created_at", { ascending: false });
   if (r.error){
-    document.getElementById("results").innerHTML =
-      '<p class="muted">Could not load profiles: ' + esc(r.error.message) + '</p>';
+    r = await sb.from("profiles").select("id, name, role, roles, skills, city, rate, miles, gear, credits, union_member, multi_role, available_now, created_at").order("created_at", { ascending: false });
+  }
+  if (r.error){
+    document.getElementById("results").innerHTML = '<p class="muted">Could not load profiles: ' + esc(r.error.message) + '</p>';
     return;
   }
   ROWS = r.data || [];
   renderRows();
 }
+
+function openBook(id, name){
+  TARGET = id;
+  document.getElementById("bookTitle").textContent = "Request " + name;
+  document.getElementById("bookTo").textContent = "This request goes to the freelancer's CrewBoard inbox.";
+  document.getElementById("bookMsg").className = "muted";
+  document.getElementById("bookMsg").textContent = "";
+  document.getElementById("bookModal").classList.remove("hidden");
+}
+
+function closeBook(){ document.getElementById("bookModal").classList.add("hidden"); }
+window.openBook = openBook;
+window.closeBook = closeBook;
+
+document.getElementById("bookClose").onclick = closeBook;
+
+document.getElementById("bookForm").onsubmit = async function(e){
+  e.preventDefault();
+  if (!sb || !COMPANY) return;
+  var f = e.target;
+  var row = {
+    company_id: COMPANY.id,
+    freelancer_id: TARGET,
+    event_name: f.event_name.value,
+    event_date: f.event_date.value || null,
+    location: f.location.value,
+    offered_rate: parseInt(f.offered_rate.value, 10) || null,
+    message: f.message.value,
+    status: "pending"
+  };
+  document.getElementById("bookSend").disabled = true;
+  show("bookMsg", "Sending...", "wait");
+  var r = await sb.from("bookings").insert(row);
+  document.getElementById("bookSend").disabled = false;
+  if (r.error){ show("bookMsg", r.error.message, "err"); return; }
+  show("bookMsg", "Request sent. The freelancer will see it in their inbox.", "ok");
+  f.reset();
+};
 
 document.getElementById("fRole").innerHTML = '<option value="">All roles</option>' + roleGroups();
 ["fRole","fCity","fSkill","fRate","fAvail","fMulti","fUnion"].forEach(function(id){
