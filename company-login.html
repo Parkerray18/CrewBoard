@@ -3,8 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Company login | CrewBoard</title>
+<title>Company Login | CrewBoard</title>
 <meta name="description" content="Log in to your CrewBoard company account to send booking requests to freelancers.">
+<link rel="canonical" href="https://crewboard.fit/company-login.html">
+<meta property="og:title" content="Company Login | CrewBoard">
+<meta property="og:description" content="Log in to your CrewBoard company account to send booking requests to freelancers.">
+<meta property="og:url" content="https://crewboard.fit/company-login.html">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0a1a2f">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff6b2c'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -58,13 +64,13 @@
       </div>
       <div>
         <h4>Companies</h4>
-        <p><a href="company.html">Start a free trial</a></p>
         <p><a href="company-signup.html">Register your company</a></p>
+        <p><a href="company-login.html">Company login</a></p>
         <p><a href="index.html#pricing">See pricing</a></p>
       </div>
     </div>
     <p class="disclaimer"><b>CrewBoard is a directory, not an employer.</b> We do not employ freelancers, handle pay, or manage contracts or worker classification. Rates and availability are supplied by freelancers themselves. Always confirm credentials, insurance and union status directly before booking.</p>
-    <p class="disclaimer">&copy; 2026 CrewBoard. All rights reserved.</p>
+    <p class="disclaimer">&copy; 2026 CrewBoard &middot; crewboard.fit</p>
   </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -80,7 +86,7 @@ var CATEGORIES = {
   "Art & Props": ["Props Master","Art Director","Set Dresser","Props Assistant"],
   "Event Ops": ["Event Manager","Venue Ops","Load-In / Load-Out","Crowd Manager","Usher","Ticket / Box Office","Security","Parking / Traffic","Merchandise"],
   "Technical & Broadcast": ["Broadcast Engineer","IT / Network","Satellite / Transmission","Streaming Tech","Data / Stats","Graphics Operator"],
-  "Sports Specific": ["Scoreboard Operator","Stats Crew","Chain Crew","Umpire / Official","Team Liaison","Athletic Trainer"],
+  "Sports Specific": ["Scoreboard Operator","Stat Crew","Chain Crew","Umpire / Official","Team Liaison","Athletic Trainer"],
   "Creative & Talent": ["Director","Choreographer","Music Director","Vocalist","Actor","Dancer","Musician","Host / MC","Voiceover","Content Creator"],
   "Support": ["Driver","Catering","Craft Services","Medic","Interpreter","Translator","Safety Officer"]
 };
@@ -116,9 +122,7 @@ window.addEventListener("DOMContentLoaded", function(){
   if (!configured){
     var b = document.createElement("div");
     b.className = "wrap";
-    b.innerHTML = '<div class="warn"><b>Almost ready:</b> the database key has not been added yet. ' +
-      'Open <code>config.js</code> and paste your Supabase publishable key where it says PASTE_YOUR_PUBLISHABLE_KEY_HERE. ' +
-      'Until then, sign-ups and the directory are switched off.</div>';
+    b.innerHTML = '<div class="warn"><b>Almost ready:</b> the database connection is being set up. Please check back shortly.</div>';
     document.body.insertBefore(b, document.body.children[1] || null);
   }
   wireAuthSlot();
@@ -175,7 +179,7 @@ async function showStatus(){
 document.getElementById("coLoginForm").onsubmit = async function(e){
   e.preventDefault();
   var f = e.target;
-  if (!sb){ show("coLoginMsg", "The database key has not been added yet.", "err"); return; }
+  if (!sb){ show("coLoginMsg", "Company logins are being set up. Please check back shortly.", "err"); return; }
   document.getElementById("coLoginBtn").disabled = true;
   var r = await sb.auth.signInWithPassword({ email: f.email.value, password: f.password.value });
   document.getElementById("coLoginBtn").disabled = false;
