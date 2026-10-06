@@ -1,1 +1,229 @@
-PLACEHOLDER_B
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Directory | CrewBoard</title>
+<meta name="description" content="Search freelancers in entertainment and sports by role, skill, city and day rate.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff6b2c'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="index.html"><span class="mark">C</span>Crew<span>Board</span></a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a class="opt-link" href="directory.html">Directory</a>
+      <a class="opt-link" href="edit-profile.html">My Profile</a>
+      <span id="authSlot"></span>
+    </nav>
+  </div>
+</header>
+
+<section class="wrap">
+  <p class="eyebrow">Search the directory</p>
+  <h2>Find freelancers</h2>
+  <p class="muted">Live profiles from freelancers who have signed up. Search a skill and everyone who lists it appears, even if it is not their main job.</p>
+  <div class="panelbar">
+    <div class="filters">
+      <select id="fRole"><option value="">All roles</option></select>
+      <input id="fCity" type="text" placeholder="City (e.g. Dallas)">
+      <input id="fSkill" type="text" placeholder="Any skill (e.g. sound, rigging)">
+      <input id="fRate" type="number" min="0" placeholder="Max day rate ($)">
+      <label class="check"><input id="fAvail" type="checkbox"> Available now</label>
+      <label class="check"><input id="fMulti" type="checkbox"> Multi-role work</label>
+      <label class="check"><input id="fUnion" type="checkbox"> Union only</label>
+    </div>
+  </div>
+  <p id="count" class="muted"></p>
+  <div id="results" class="grid"></div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>CrewBoard</h4>
+        <p>A directory for freelancers across entertainment and sports.</p>
+        <p>Roles, skills and day rates, all in one place.</p>
+      </div>
+      <div>
+        <h4>Freelancers</h4>
+        <p><a href="signup.html">Create a free profile</a></p>
+        <p><a href="directory.html">See the directory</a></p>
+        <p><a href="edit-profile.html">Edit my profile</a></p>
+      </div>
+      <div>
+        <h4>Companies</h4>
+        <p><a href="company.html">Start a free trial</a></p>
+        <p><a href="index.html#pricing">See pricing</a></p>
+      </div>
+    </div>
+    <p class="disclaimer"><b>CrewBoard is a directory, not an employer.</b> We do not employ freelancers, handle pay, or manage contracts or worker classification. Rates and availability are supplied by freelancers themselves. Always confirm credentials, insurance and union status directly before booking.</p>
+    <p class="disclaimer">&copy; 2026 CrewBoard. All rights reserved.</p>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+var CATEGORIES = {
+  "Production": ["Producer","Production Manager","Production Coordinator","Production Assistant","Stage Manager","Assistant Stage Manager","Talent Wrangler","Runner"],
+  "Camera & Video": ["Camera Op","DP / DOP","Assistant Camera","Utility","Replay / EVS","Video Engineer","Playback","PTZ Operator","Photographer"],
+  "Audio": ["A1","A2","A3","Monitor Engineer","RF Technician","Comms / Intercom","Sound Designer","DJ"],
+  "Lighting & Rigging": ["Lighting Director","Master Electrician","Lighting Tech","Rigger","Climber","Spot Op","Follow Spot"],
+  "Staging & Scenic": ["Stagehand","Carpenter","Scenic Artist","Fly Operator","Automation Tech","Set Builder","Painter"],
+  "Costume & Makeup": ["Wardrobe","Dresser","Hair & Makeup","SFX Makeup","Tailor"],
+  "Art & Props": ["Props Master","Art Director","Set Dresser","Props Assistant"],
+  "Event Ops": ["Event Manager","Venue Ops","Load-In / Load-Out","Crowd Manager","Usher","Ticket / Box Office","Security","Parking / Traffic","Merchandise"],
+  "Technical & Broadcast": ["Broadcast Engineer","IT / Network","Satellite / Transmission","Streaming Tech","Data / Stats","Graphics Operator"],
+  "Sports Specific": ["Scoreboard Operator","Stat Crew","Chain Crew","Umpire / Official","Team Liaison","Athletic Trainer"],
+  "Creative & Talent": ["Director","Choreographer","Music Director","Vocalist","Actor","Dancer","Musician","Host / MC","Voiceover","Content Creator"],
+  "Support": ["Driver","Catering","Craft Services","Medic","Interpreter","Translator","Safety Officer"]
+};
+
+function roleGroups(){
+  var out = "";
+  for (var cat in CATEGORIES){
+    var opts = CATEGORIES[cat].map(function(r){ return "<option>" + r + "</option>"; }).join("");
+    out += '<optgroup label="' + cat + '">' + opts + '</optgroup>';
+  }
+  return out;
+}
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];
+  });
+}
+function rolesOf(p){ return [p.role].concat(p.roles || []).filter(Boolean); }
+function show(id, text, kind){
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.className = "msg " + (kind || "wait");
+  el.textContent = text;
+}
+
+var configured = window.SB_KEY && window.SB_KEY.indexOf("PASTE_") !== 0;
+var sb = null;
+if (configured && window.supabase){
+  sb = window.supabase.createClient(window.SB_URL, window.SB_KEY);
+}
+
+window.addEventListener("DOMContentLoaded", function(){
+  if (!configured){
+    var b = document.createElement("div");
+    b.className = "wrap";
+    b.innerHTML = '<div class="warn"><b>Almost ready:</b> the database key has not been added yet. ' +
+      'Open <code>config.js</code> and paste your Supabase publishable key where it says PASTE_YOUR_PUBLISHABLE_KEY_HERE. ' +
+      'Until then, sign-ups and the directory are switched off.</div>';
+    document.body.insertBefore(b, document.body.children[1] || null);
+  }
+  wireAuthSlot();
+});
+
+async function currentUser(){
+  if (!sb) return null;
+  var r = await sb.auth.getUser();
+  return r.data ? r.data.user : null;
+}
+
+async function wireAuthSlot(){
+  var slot = document.getElementById("authSlot");
+  if (!slot) return;
+  if (!sb){ slot.innerHTML = ""; return; }
+  var u = await currentUser();
+  if (u){
+    slot.innerHTML = '<a href="#" id="logoutLink">Log out</a>';
+    document.getElementById("logoutLink").onclick = async function(e){
+      e.preventDefault();
+      await sb.auth.signOut();
+      location.href = "index.html";
+    };
+  } else {
+    slot.innerHTML = '<a href="signup.html">Sign up</a> <a href="login.html">Log in</a>';
+  }
+}
+</script>
+<script>
+var ROWS = [];
+
+function renderRows(){
+  var role = document.getElementById("fRole").value;
+  var city = document.getElementById("fCity").value.trim().toLowerCase();
+  var skill = document.getElementById("fSkill").value.trim().toLowerCase();
+  var maxRate = parseInt(document.getElementById("fRate").value, 10);
+  var avail = document.getElementById("fAvail").checked;
+  var multi = document.getElementById("fMulti").checked;
+  var union = document.getElementById("fUnion").checked;
+
+  var list = ROWS.filter(function(p){
+    if (role && rolesOf(p).indexOf(role) === -1) return false;
+    if (city && String(p.city || "").toLowerCase().indexOf(city) === -1) return false;
+    if (maxRate && p.rate > maxRate) return false;
+    if (avail && !p.available_now) return false;
+    if (multi && !p.multi_role) return false;
+    if (union && !p.union_member) return false;
+    if (skill){
+      var hay = rolesOf(p).join(" ") + " " + (p.skills || "");
+      if (hay.toLowerCase().indexOf(skill) === -1) return false;
+    }
+    return true;
+  });
+
+  document.getElementById("count").textContent =
+    list.length + " freelancer" + (list.length === 1 ? "" : "s") + " found";
+
+  if (!list.length){
+    document.getElementById("results").innerHTML =
+      '<p class="muted">No matches yet. Try widening your filters' +
+      (ROWS.length ? "." : ", or be the first to create a profile.") + '</p>';
+    return;
+  }
+
+  document.getElementById("results").innerHTML = list.map(function(p){
+    var initials = String(p.name || "?").split(" ").map(function(x){ return x[0]; }).join("").slice(0,2);
+    var c = '<div class="card">';
+    c += '<div class="card-top"><div class="avatar">' + esc(initials) + '</div>';
+    c += '<div><h3>' + esc(p.name) + '</h3><span class="muted">' + esc(p.city || "Location not set") + '</span></div>';
+    c += '<div class="rate">$' + esc(p.rate || 0) + '<small>/day</small></div></div>';
+    c += '<div class="tags">' + rolesOf(p).map(function(r){ return '<span class="tag">' + esc(r) + '</span>'; }).join("");
+    if (p.multi_role) c += '<span class="tag blue">Multi-role</span>';
+    if (p.union_member) c += '<span class="tag orange">Union</span>';
+    if (p.available_now) c += '<span class="tag green">Available now</span>';
+    c += '</div>';
+    if (p.skills) c += '<p><b>Can do:</b> ' + esc(p.skills) + '</p>';
+    if (p.gear) c += '<p><b>Gear:</b> ' + esc(p.gear) + '</p>';
+    if (p.credits) c += '<p><b>Credits:</b> ' + esc(p.credits) + '</p>';
+    if (p.miles) c += '<p>Travels up to ' + esc(p.miles) + ' miles</p>';
+    c += '</div>';
+    return c;
+  }).join("");
+}
+
+async function loadProfiles(){
+  if (!sb){
+    document.getElementById("count").textContent = "";
+    document.getElementById("results").innerHTML =
+      '<p class="muted">The directory switches on once the database key is added.</p>';
+    return;
+  }
+  var r = await sb.from("profiles").select("*").order("created_at", { ascending: false });
+  if (r.error){
+    document.getElementById("results").innerHTML =
+      '<p class="muted">Could not load profiles: ' + esc(r.error.message) + '</p>';
+    return;
+  }
+  ROWS = r.data || [];
+  renderRows();
+}
+
+document.getElementById("fRole").innerHTML = '<option value="">All roles</option>' + roleGroups();
+["fRole","fCity","fSkill","fRate","fAvail","fMulti","fUnion"].forEach(function(id){
+  var el = document.getElementById(id);
+  el.addEventListener("input", renderRows);
+  el.addEventListener("change", renderRows);
+});
+loadProfiles();
+</script>
+</body>
+</html>
