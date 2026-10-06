@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CrewBoard | Hire Freelancers in Entertainment & Sports</title>
-<meta name="description" content="A free directory where freelancers in entertainment and sports list their roles, skills and day rates, and companies search and book them.">
+<title>Sign up | CrewBoard</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff6b2c'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -21,62 +20,23 @@
   </div>
 </header>
 
-<section class="hero">
-  <div class="wrap">
-    <p class="eyebrow">Free for freelancers</p>
-    <h1>Hire anyone in entertainment &amp; sports, in minutes not days.</h1>
-    <p class="sub">Camera ops, stage managers, PAs, audio, riggers, wardrobe, drivers, artists and more. Every freelancer writes their own role and lists every skill they have, with day rates shown up front. No bidding, no waiting.</p>
-    <div class="cta-row">
-      <a class="btn" href="directory.html">Find Freelancers</a>
-      <a class="btn ghost" href="signup.html">I'm a Freelancer &mdash; Join Free</a>
-    </div>
-    <div class="trust">
-      <span><b>Every role</b> welcome</span>
-      <span><b>Multiple skills</b> per profile</span>
-      <span><b>Rates</b> visible up front</span>
-    </div>
+<section class="wrap narrow">
+  <p class="eyebrow">Free account</p>
+  <h2>Create your freelancer account</h2>
+  <p class="muted">You'll pick your role and day rate in the next step. Free forever.</p>
+  <div class="authbox">
+    <form id="signupForm" class="form">
+      <label class="fld">Email
+        <input name="email" type="email" placeholder="you@example.com" required>
+      </label>
+      <label class="fld">Password
+        <input name="password" type="password" placeholder="At least 6 characters" minlength="6" required>
+      </label>
+      <button class="btn" type="submit" id="signupBtn">Create account</button>
+      <p id="signupMsg" class="muted"></p>
+    </form>
   </div>
-</section>
-
-<section class="band">
-  <div class="wrap">
-    <p class="eyebrow">How it works</p>
-    <h2>Three steps, no phone tag</h2>
-    <div class="steps">
-      <div><b>1</b><h3>Freelancers create an account</h3><p>Sign up in under a minute, then build your profile: primary role, every other role and skill you have, day rate, gear, credits and availability.</p></div>
-      <div><b>2</b><h3>Companies search</h3><p>Filter by role, any skill, city and rate to see exactly who is free right now.</p></div>
-      <div><b>3</b><h3>Send a booking request</h3><p>Freelancers accept or decline, and can update their own rate and availability any time.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="wrap">
-  <p class="eyebrow">Pricing</p>
-  <h2>Free for freelancers, always</h2>
-  <div class="plans">
-    <div class="plan">
-      <h3>Freelancers</h3>
-      <p class="price">Free</p>
-      <ul>
-        <li>A free account you can edit any time</li>
-        <li>Public profile with your day rate</li>
-        <li>Add as many roles and skills as you have</li>
-        <li>Availability and travel radius</li>
-      </ul>
-      <a class="btn" href="signup.html">Create my account</a>
-    </div>
-    <div class="plan featured">
-      <h3>Companies</h3>
-      <p class="price">$49<small>/month</small></p>
-      <ul>
-        <li>Unlimited search and contact</li>
-        <li>Search every skill, not just job titles</li>
-        <li>Saved freelancer lists and one-click rebook</li>
-        <li>30-day free trial, no card required</li>
-      </ul>
-      <a class="btn" href="company.html">Request early access</a>
-    </div>
-  </div>
+  <p class="muted">Already have an account? <a href="login.html">Log in</a></p>
 </section>
 
 <footer>
@@ -182,6 +142,23 @@ async function wireAuthSlot(){
     slot.innerHTML = '<a href="signup.html">Sign up</a> <a href="login.html">Log in</a>';
   }
 }
+</script>
+<script>
+document.getElementById("signupForm").onsubmit = async function(e){
+  e.preventDefault();
+  var f = e.target;
+  if (!sb){ show("signupMsg", "The database key has not been added yet. Add it in config.js first.", "err"); return; }
+  document.getElementById("signupBtn").disabled = true;
+  show("signupMsg", "Creating your account...", "wait");
+  var r = await sb.auth.signUp({ email: f.email.value, password: f.password.value });
+  document.getElementById("signupBtn").disabled = false;
+  if (r.error){ show("signupMsg", r.error.message, "err"); return; }
+  if (r.data && r.data.session){
+    location.href = "edit-profile.html";
+  } else {
+    show("signupMsg", "Check your email for a confirmation link, then come back and log in.", "ok");
+  }
+};
 </script>
 </body>
 </html>
