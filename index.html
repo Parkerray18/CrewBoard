@@ -14,21 +14,23 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff6b2c'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 <style>
-.plan .alt{border-top:1px solid var(--line);margin-top:14px;padding-top:14px}
-.plan .alt .ammount{font-size:1.35rem;font-weight:750;letter-spacing:-.01em;margin:0 0 2px}
-.plan .alt .ammount small{font-size:.85rem;font-weight:500;color:var(--muted)}
-.plan .save{display:inline-block;background:var(--greenbg);color:var(--green);font-size:.76rem;
-  font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;border-radius:99px;margin-top:6px}
+.plan .alt{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}
+.plan .alt .amount{font-size:1.5rem;font-weight:750;letter-spacing:-.01em;margin:0 0 4px}
+.plan .alt .amount small{font-size:.9rem;font-weight:500;color:var(--muted);letter-spacing:0}
+.plan .alt p{margin:0 0 4px}
+.plan .save{display:inline-block;background:var(--greenbg);color:var(--green);font-size:.75rem;
+  font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border-radius:99px;margin-top:8px}
 </style>
 </head>
 <body>
 <header class="nav">
   <div class="nav-inner">
-    <a class="logo" href="index.html"><span class="mark">C</span>Create<span>Board</span></a>
+    <a class="logo" href="index.html"><span class="mark">C</span>Crew<span>Board</span></a>
     <nav>
       <a href="index.html">Home</a>
       <a class="opt-link" href="directory.html">Directory</a>
       <a class="opt-link" href="edit-profile.html">My Profile</a>
+      <a class="opt-link" href="requests.html">Requests</a>
       <span id="authSlot"></span>
     </nav>
   </div>
@@ -81,10 +83,10 @@
     <div class="plan featured">
       <h3>Companies</h3>
       <p class="price">$74.99<small>/month</small></p>
-      <p class="muted">Billed monthly, cancel any time</p>
+      <p class="muted">Billed monthly. Cancel any time.</p>
       <div class="alt">
-        <p class="ammount">$720 <small>per year</span></small></p>
-        <p class="muted">That works out to $60<small>/month</small> &mdash; a 20% saving</p>
+        <p class="amount">$720<small>/year</small></p>
+        <p class="muted">Billed annually &mdash; works out to <b>$60/month</b></p>
         <span class="save">Save $179.88 a year</span>
       </div>
       <ul>
@@ -111,10 +113,12 @@
         <p><a href="signup.html">Create a free profile</a></p>
         <p><a href="directory.html">See the directory</a></p>
         <p><a href="edit-profile.html">Edit my profile</a></p>
+        <p><a href="requests.html">Booking requests</a></p>
       </div>
       <div>
         <h4>Companies</h4>
-        <p><a href="company.html">Start a free trial</a></p>
+        <p><a href="company-signup.html">Register your company</a></p>
+        <p><a href="company-login.html">Company login</a></p>
         <p><a href="index.html#pricing">See pricing</a></p>
       </div>
     </div>
@@ -125,6 +129,42 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script>
+var CATEGORIES = {
+  "Production": ["Producer","Production Manager","Production Coordinator","Production Assistant","Stage Manager","Assistant Stage Manager","Talent Wrangler","Runner"],
+  "Camera & Video": ["Camera Op","DP / DOP","Assistant Camera","Utility","Replay / EVS","Video Engineer","Playback","PTZ Operator","Photographer"],
+  "Audio": ["A1","A2","A3","Monitor Engineer","RF Technician","Comms / Intercom","Sound Designer","DJ"],
+  "Lighting & Rigging": ["Lighting Director","Master Electrician","Lighting Tech","Rigger","Climber","Spot Op","Follow Spot"],
+  "Staging & Scenic": ["Stagehand","Carpenter","Scenic Artist","Fly Operator","Automation Tech","Set Builder","Painter"],
+  "Costume & Makeup": ["Wardrobe","Dresser","Hair & Makeup","SFX Makeup","Tailor"],
+  "Art & Props": ["Props Master","Art Director","Set Dresser","Props Assistant"],
+  "Event Ops": ["Event Manager","Venue Ops","Load-In / Load-Out","Crowd Manager","Usher","Ticket / Box Office","Security","Parking / Traffic","Merchandise"],
+  "Technical & Broadcast": ["Broadcast Engineer","IT / Network","Satellite / Transmission","Streaming Tech","Data / Stats","Graphics Operator"],
+  "Sports Specific": ["Scoreboard Operator","Stat Crew","Chain Crew","Umpire / Official","Team Liaison","Athletic Trainer"],
+  "Creative & Talent": ["Director","Choreographer","Music Director","Vocalist","Actor","Dancer","Musician","Host / MC","Voiceover","Content Creator"],
+  "Support": ["Driver","Catering","Craft Services","Medic","Interpreter","Translator","Safety Officer"]
+};
+
+function roleGroups(){
+  var out = "";
+  for (var cat in CATEGORIES){
+    var opts = CATEGORIES[cat].map(function(r){ return "<option>" + r + "</option>"; }).join("");
+    out += '<optgroup label="' + cat + '">' + opts + '</optgroup>';
+  }
+  return out;
+}
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];
+  });
+}
+function rolesOf(p){ return [p.role].concat(p.roles || []).filter(Boolean); }
+function show(id, text, kind){
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.className = "msg " + (kind || "wait");
+  el.textContent = text;
+}
+
 var configured = window.SB_KEY && window.SB_KEY.indexOf("PASTE_") !== 0;
 var sb = null;
 if (configured && window.supabase){
