@@ -3,9 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CrewBoard | Book Sports Broadcast & Live Event Crew</title>
-<meta name="description" content="Find available camera ops, utility, PAs, replay and audio crew for sports broadcasts and live events. See day rates up front.">
-<link rel="stylesheet" href="styles.css">
+<title>CrewBoard | Hire Freelancers in Entertainment &amp; Sports</title>
+<meta name="description" content="Hire freelancers across entertainment and sports. Camera ops, stage managers, PAs, audio, riggers, artists and more. Roles are custom, day rates are up front.">
+<style>
+:root{--navy:#0b1f3a;--accent:#ff6b2c;--bg:#f6f8fb;--text:#16202e;--muted:#5d6b7e;--card:#fff;--line:#e2e8f0}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--text);background:var(--bg);line-height:1.5}
+.wrap{max-width:1100px;margin:0 auto;padding:48px 20px}
+.narrow{max-width:640px}
+.center{text-align:center}
+h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.1;margin:0 0 16px}
+h2{font-size:1.8rem;margin:0 0 8px}
+h3{margin:0 0 6px}
+.muted{color:var(--muted)}
+.nav{position:sticky;top:0;background:var(--navy);z-index:10}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;padding:14px 20px}
+.nav nav{display:flex;gap:20px;align-items:center}
+.nav a{color:#fff;text-decoration:none;font-size:.95rem}
+.logo{font-weight:800;font-size:1.3rem}
+.logo span{color:var(--accent)}
+.hero{background:linear-gradient(135deg,var(--navy),#16396b);color:#fff}
+.hero .wrap{padding:90px 20px}
+.sub{font-size:1.2rem;max-width:620px;color:#cfd9e8}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.btn{display:inline-block;background:var(--accent);color:#fff;border:0;padding:12px 22px;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;text-decoration:none}
+.btn:hover{filter:brightness(1.08)}
+.btn.small{padding:8px 14px;font-size:.9rem}
+.btn.ghost{background:transparent;border:2px solid #fff}
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 8px;align-items:center}
+.filters input[type=text],.filters input[type=number],.filters select{padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:.95rem;background:#fff}
+.check{display:flex;gap:6px;align-items:center;font-size:.95rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:18px;margin-top:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:8px}
+.card-top{display:flex;gap:12px;align-items:center}
+.avatar{width:48px;height:48px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.rate{margin-left:auto;font-weight:800;font-size:1.2rem}
+.rate small{font-weight:400;color:var(--muted);font-size:.75rem}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{background:#eaf0f8;color:var(--navy);padding:2px 10px;border-radius:99px;font-size:.8rem}
+.tag.green{background:#dcf5e4;color:#14612f}
+.tag.orange{background:#ffe9dd;color:#a6420f}
+.tag.blue{background:#e3edff;color:#1b4d9e}
+.card p{margin:0;font-size:.9rem;color:var(--muted)}
+.card .btn{margin-top:auto;text-align:center}
+.band{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;margin-top:20px}
+.steps b{display:inline-flex;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;align-items:center;justify-content:center;margin-bottom:8px}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin:20px 0}
+.plan{background:#fff;border:1px solid var(--line);border-radius:12px;padding:26px}
+.plan.featured{border:2px solid var(--accent)}
+.price{font-size:2.2rem;font-weight:800;margin:4px 0 10px}
+.price small{font-size:1rem;font-weight:400;color:var(--muted)}
+.plan ul{padding-left:18px;margin:0 0 18px}
+.form{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.form input,.form select,.form textarea{padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-size:1rem;font-family:inherit;width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+footer{background:var(--navy);color:#cfd9e8;font-size:.9rem}
+footer .wrap{padding:30px 20px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal.hidden{display:none}
+.modal-box{background:#fff;border-radius:12px;padding:26px;width:100%;max-width:480px;position:relative}
+.x{position:absolute;top:10px;right:14px;background:none;border:0;font-size:1.6rem;cursor:pointer}
+@media(max-width:600px){.nav nav a:not(.btn){display:none}.two{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 
@@ -13,34 +73,37 @@
   <div class="wrap nav-inner">
     <a class="logo" href="#top">Crew<span>Board</span></a>
     <nav>
-      <a href="#find">Find Crew</a>
+      <a href="#find">Find Freelancers</a>
       <a href="#how">How It Works</a>
       <a href="#pricing">Pricing</a>
-      <a class="btn small" href="#join">Join as Crew</a>
+      <a class="btn small" href="#join">Join Free</a>
     </nav>
   </div>
 </header>
 
 <section class="hero" id="top">
   <div class="wrap">
-    <h1>Book sports &amp; live event crew in minutes, not days.</h1>
-    <p class="sub">Search camera ops, utility, replay, audio and PAs by city and date. Day rates are shown up front. No bidding, no waiting.</p>
+    <h1>Hire anyone in entertainment &amp; sports, in minutes not days.</h1>
+    <p class="sub">Camera ops, stage managers, PAs, audio, riggers, artists, technicians and more. Everyone writes their own role and lists every skill they have. Search by city, date and day rate, with rates shown up front. No bidding, no waiting.</p>
     <div class="cta-row">
-      <a class="btn" href="#find">Find Crew</a>
+      <a class="btn" href="#find">Find Freelancers</a>
       <a class="btn ghost" href="#join">I'm a Freelancer (Free)</a>
     </div>
   </div>
 </section>
 
 <section class="wrap" id="find">
-  <h2>Find available crew</h2>
-  <p class="muted">Sample profiles shown. Replace them in <code>data.js</code>.</p>
+  <h2>Find freelancers</h2>
+  <p class="muted">These are example profiles so you can see how it works. Founding members appear here as they join.</p>
+  <p class="muted">Search a skill and everyone who lists it will appear, even if it is not their main job.</p>
   <div class="filters">
     <select id="fRole"><option value="">All roles</option></select>
     <input id="fCity" type="text" placeholder="City (e.g. Dallas)">
+    <input id="fSkill" type="text" placeholder="Any skill (e.g. sound, rigging, wardrobe)">
     <input id="fRate" type="number" min="0" placeholder="Max day rate ($)">
     <label class="check"><input id="fAvail" type="checkbox"> Available this weekend</label>
     <label class="check"><input id="fUnion" type="checkbox"> Union only</label>
+    <label class="check"><input id="fMulti" type="checkbox"> Available for multi-role work</label>
   </div>
   <p id="count" class="muted"></p>
   <div id="results" class="grid"></div>
@@ -50,9 +113,9 @@
   <div class="wrap">
     <h2>How it works</h2>
     <div class="steps">
-      <div><b>1</b><h3>Crew build a profile</h3><p>Role, day rate, gear, credits and availability. Five minutes, free.</p></div>
-      <div><b>2</b><h3>Producers search</h3><p>Filter by role, city, date and rate to see who is free right now.</p></div>
-      <div><b>3</b><h3>Send a booking request</h3><p>Crew accept or decline in one tap and get a text alert.</p></div>
+      <div><b>1</b><h3>Freelancers build a profile</h3><p>Your role, every other skill you have, day rate, gear, credits and availability. Five minutes, free.</p></div>
+      <div><b>2</b><h3>Companies search</h3><p>Filter by role, any skill, city and rate to see who is free right now.</p></div>
+      <div><b>3</b><h3>Send a booking request</h3><p>Freelancers accept or decline in one tap and get a text alert.</p></div>
     </div>
   </div>
 </section>
@@ -61,39 +124,43 @@
   <h2>Pricing</h2>
   <div class="plans">
     <div class="plan">
-      <h3>Crew</h3>
+      <h3>Freelancers</h3>
       <p class="price">Free</p>
-      <ul><li>Public profile with your day rate</li><li>Availability calendar</li><li>Booking requests by text and email</li></ul>
+      <ul><li>Public profile with your day rate</li><li>Add as many roles and skills as you have</li><li>Availability calendar</li><li>Booking requests by text and email</li></ul>
       <a class="btn" href="#join">Create profile</a>
     </div>
     <div class="plan featured">
       <h3>Companies</h3>
       <p class="price">$49<small>/month</small></p>
-      <ul><li>Unlimited search and contact</li><li>Saved crew lists and one-click rebook</li><li>Last-minute mode with text alerts</li><li>30-day free trial, no card</li></ul>
+      <ul><li>Unlimited search and contact</li><li>Search every skill, not just job titles</li><li>Saved freelancer lists and one-click rebook</li><li>Last-minute mode with text alerts</li><li>30-day free trial, no card</li></ul>
       <a class="btn" href="#contact">Start free trial</a>
     </div>
   </div>
-  <p class="muted center">Edit prices in index.html. Suggested test points: $49 and $99.</p>
+  <p class="muted center">Free for freelancers, always. Companies can try it free for 30 days.</p>
 </section>
 
 <section class="band" id="join">
   <div class="wrap narrow">
-    <h2>Join as crew (free)</h2>
-    <p class="muted">Founding Crew get a badge and priority placement at launch.</p>
+    <h2>Join as a freelancer (free)</h2>
+    <p class="muted">Founding members get a badge and priority placement at launch. Work in entertainment, sports, or both. Everyone is welcome.</p>
     <form id="joinForm" class="form">
       <input name="name" placeholder="Full name" required>
       <div class="two">
         <select name="role" id="joinRole" required></select>
         <input name="city" placeholder="Home city" required>
       </div>
+      <input name="roles" placeholder="Other roles you work (comma separated: Stage Manager, Rigger, Wardrobe)">
+      <input name="skills" placeholder="Everything you can do (comma separated: lighting, sound, rigging, driving, craft)">
+      <input name="customRole" id="customRole" placeholder="Don't see your role? Type it here" style="display:none">
       <div class="two">
         <input name="rate" type="number" min="0" placeholder="Day rate ($)" required>
         <input name="miles" type="number" min="0" placeholder="Travel radius (miles)">
       </div>
-      <input name="gear" placeholder="Gear you own (cameras, lenses, headset...)">
-      <input name="credits" placeholder="Credits (networks, teams, venues)">
+      <input name="gear" placeholder="Gear or equipment you own (optional)">
+      <input name="credits" placeholder="Credits (shows, teams, venues, tours)">
       <input name="email" type="email" placeholder="Email" required>
-      <label class="check"><input type="checkbox" name="union"> Union member (IATSE, NABET)</label>
+      <label class="check"><input type="checkbox" name="multi"> Available for multi-role work (I can cover more than one job)</label>
+      <label class="check"><input type="checkbox" name="union"> Union member (IATSE, NABET, Actors' Equity)</label>
       <label class="check"><input type="checkbox" name="avail"> Available this weekend</label>
       <button class="btn" type="submit">Create my profile</button>
       <p id="joinMsg" class="muted"></p>
@@ -107,7 +174,7 @@
   <form id="contactForm" class="form">
     <input name="company" placeholder="Company name" required>
     <input name="email" type="email" placeholder="Work email" required>
-    <input name="need" placeholder="What crew do you hire most?">
+    <input name="need" placeholder="Who do you hire most? Any role, any skill">
     <button class="btn" type="submit">Request access</button>
     <p id="contactMsg" class="muted"></p>
   </form>
@@ -115,8 +182,8 @@
 
 <footer>
   <div class="wrap">
-    <p><b>CrewBoard</b> is a directory, not an employer. We do not handle pay, contracts or classification of workers.</p>
-    <p class="muted">&copy; 2026 CrewBoard. Replace this name everywhere.</p>
+    <p><b>CrewBoard</b> is a directory for freelancers across entertainment and sports. It is not an employer, and we do not handle pay, contracts or classification of workers.</p>
+    <p class="muted">&copy; 2026 CrewBoard. All rights reserved.</p>
   </div>
 </footer>
 
@@ -138,7 +205,205 @@
   </div>
 </div>
 
-<script src="data.js"></script>
-<script src="app.js"></script>
+<script>
+var CATEGORIES = {
+  "Production": ["Producer","Production Manager","Production Coordinator","Production Assistant","Stage Manager","Assistant Stage Manager","Talent Wrangler","Runner"],
+  "Camera & Video": ["Camera Op","DP / DOP","Assistant Camera","Utility","Replay / EVS","Video Engineer","Playback","PTZ Operator","Photographer"],
+  "Audio": ["A1","A2","A3","Monitor Engineer","RF Technician","Comms / Intercom","Sound Designer","DJ"],
+  "Lighting & Rigging": ["Lighting Director","Master Electrician","Lighting Tech","Rigger","Climber","Spot Op","Follow Spot"],
+  "Staging & Scenic": ["Stagehand","Carpenter","Scenic Artist","Fly Operator","Automation Tech","Set Builder","Painter"],
+  "Costume & Makeup": ["Wardrobe","Dresser","Hair & Makeup","SFX Makeup","Tailor"],
+  "Art & Props": ["Props Master","Art Director","Set Dresser","Props Assistant"],
+  "Event Ops": ["Event Manager","Venue Ops","Load-In / Load-Out","Crowd Manager","Usher","Ticket / Box Office","Security","Parking / Traffic","Merchandise"],
+  "Technical & Broadcast": ["Broadcast Engineer","IT / Network","Satellite / Transmission","Streaming Tech","Data / Stats","Graphics Operator"],
+  "Sports Specific": ["Scoreboard Operator","Stat Crew","Chain Crew","Umpire / Official","Team Liaison","Athletic Trainer"],
+  "Creative & Talent": ["Director","Choreographer","Music Director","Vocalist","Actor","Dancer","Musician","Host / MC","Voiceover","Content Creator"],
+  "Support": ["Driver","Catering","Craft Services","Medic","Interpreter","Translator","Safety Officer"]
+};
+var ROLES = [];
+for (var cat in CATEGORIES) { ROLES = ROLES.concat(CATEGORIES[cat]); }
+
+var CREW = [
+  {name:"Marcus Reed", role:"Camera Op", roles:["Utility","Replay / EVS"], skills:"handheld, long lens, PTZ, EVS replay, cable pull",
+   city:"Dallas, TX", rate:650, miles:150, union:true, avail:true, multi:true,
+   gear:"Sony FX9, Canon 100-400, handheld rig", credits:"NFL on FOX, Big 12 Football, FIBA"},
+  {name:"Dana Ortiz", role:"Utility", roles:["Stagehand","Runner"], skills:"cable pull, camera utility, load-in, driver",
+   city:"Charlotte, NC", rate:400, miles:200, union:false, avail:true, multi:true,
+   gear:"Own headset and cable kit", credits:"ACC Network, NASCAR, MLS"},
+  {name:"Priya Nair", role:"Stage Manager", roles:["Production Coordinator","Production Assistant"], skills:"calling cues, scheduling, talent wrangling, run of show, load-in",
+   city:"Chicago, IL", rate:550, miles:300, union:true, avail:true, multi:true,
+   gear:"Headset, laptop, printer", credits:"Lollapalooza, NBA, Broadway in Chicago"},
+  {name:"Jamal Carter", role:"Replay / EVS", roles:["Video Engineer","Playback"], skills:"EVS XT, highlight packages, signal flow",
+   city:"Atlanta, GA", rate:750, miles:300, union:true, avail:false, multi:false,
+   gear:"EVS XT-certified", credits:"SEC Network, NBA, Peachtree Road Race"},
+  {name:"Kayla Brooks", role:"Production Assistant", roles:["Usher","Merchandise"], skills:"radio, talent escort, runner, box office",
+   city:"New York, NY", rate:250, miles:50, union:false, avail:true, multi:true,
+   gear:"Radio, laptop", credits:"US Open, MSG Network, Yankees"},
+  {name:"Tom Nguyen", role:"A1", roles:["A2","RF Technician"], skills:"front of house mix, IFB, wireless coordination, comms",
+   city:"Los Angeles, CA", rate:700, miles:250, union:true, avail:true, multi:true,
+   gear:"Own mics and IFB pack", credits:"NBA, Dodgers, X Games"},
+  {name:"Sofia Marchetti", role:"Rigger", roles:["Climber","Stagehand"], skills:"truss, points, motors, fall protection, arena rigging",
+   city:"Denver, CO", rate:600, miles:500, union:true, avail:true, multi:true,
+   gear:"Harness, radios", credits:"Red Rocks, NHL, X Games"},
+  {name:"Andre Wilson", role:"Wardrobe", roles:["Dresser","Hair & Makeup"], skills:"quick changes, steaming, wardrobe continuity, kit work",
+   city:"Nashville, TN", rate:450, miles:250, union:false, avail:false, multi:true,
+   gear:"Full kit", credits:"CMT Awards, Titans, music videos"},
+  {name:"Yuki Tanaka", role:"Lighting Tech", roles:["Spot Op","Master Electrician"], skills:"grandMA, follow spot, LED wall, power distro",
+   city:"Seattle, WA", rate:575, miles:400, union:false, avail:true, multi:true,
+   gear:"Console and meters", credits:"Climate Pledge Arena, MLS, festivals"},
+  {name:"Carlos Mendes", role:"Driver", roles:["Load-In / Load-Out","Runner"], skills:"CDL, box truck, equipment transport, load-in",
+   city:"Miami, FL", rate:350, miles:600, union:false, avail:true, multi:true,
+   gear:"Box truck", credits:"Formula 1 Miami, Ultra Music Festival, Heat"},
+  {name:"Renee Foster", role:"Event Manager", roles:["Venue Ops","Crowd Manager"], skills:"staffing, crowd flow, permits, venue coordination",
+   city:"Houston, TX", rate:500, miles:200, union:false, avail:false, multi:true,
+   gear:"Radio, laptop", credits:"NRG Stadium, Rodeo Houston, Astros"},
+  {name:"Sam Patel", role:"RF Technician", roles:["Comms / Intercom","Broadcast Engineer"], skills:"wireless cameras, spectrum coordination, intercom systems",
+   city:"Phoenix, AZ", rate:600, miles:400, union:false, avail:false, multi:true,
+   gear:"Wireless camera kit", credits:"PGA Tour, Cardinals, Fiesta Bowl"}
+];
+</script>
+<script>
+var saved = JSON.parse(localStorage.getItem("crewboard_new") || "[]");
+var allCrew = CREW.concat(saved);
+var bookingTarget = null;
+
+function $(id){ return document.getElementById(id); }
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];
+  });
+}
+function rolesOf(c){ return [c.role].concat(c.roles || []).filter(Boolean); }
+
+function fillRoles(){
+  var groups = "";
+  for (var cat in CATEGORIES){
+    var opts = CATEGORIES[cat].map(function(r){ return "<option>" + esc(r) + "</option>"; }).join("");
+    groups += '<optgroup label="' + esc(cat) + '">' + opts + '</optgroup>';
+  }
+  $("fRole").innerHTML = '<option value="">All roles</option>' + groups;
+  $("joinRole").innerHTML = '<option value="">Primary role</option>' + groups +
+    '<option value="__other__">Other (type my own)</option>';
+
+  $("joinRole").addEventListener("change", function(){
+    var cr = $("customRole");
+    if (!cr) return;
+    cr.style.display = this.value === "__other__" ? "block" : "none";
+    if (this.value !== "__other__") cr.value = "";
+  });
+}
+
+function render(){
+  var role = $("fRole").value;
+  var city = $("fCity").value.trim().toLowerCase();
+  var maxRate = parseInt($("fRate").value, 10);
+  var skill = ($("fSkill").value || "").trim().toLowerCase();
+  var avail = $("fAvail").checked;
+  var union = $("fUnion").checked;
+  var multi = $("fMulti").checked;
+
+  var list = allCrew.filter(function(c){
+    if (role && rolesOf(c).indexOf(role) === -1) return false;
+    if (city && c.city.toLowerCase().indexOf(city) === -1) return false;
+    if (maxRate && c.rate > maxRate) return false;
+    if (avail && !c.avail) return false;
+    if (union && !c.union) return false;
+    if (multi && !c.multi) return false;
+    if (skill){
+      var haystack = rolesOf(c).join(" ") + " " + (c.skills || "");
+      if (haystack.toLowerCase().indexOf(skill) === -1) return false;
+    }
+    return true;
+  });
+
+  $("count").textContent = list.length + " freelancer" + (list.length === 1 ? "" : "s") + " found";
+
+  if (!list.length){
+    $("results").innerHTML = '<p class="muted">No matches. Try widening your filters.</p>';
+    return;
+  }
+
+  $("results").innerHTML = list.map(function(c){
+    var i = allCrew.indexOf(c);
+    var initials = c.name.split(" ").map(function(p){ return p[0]; }).join("").slice(0,2);
+    var card = '<div class="card">';
+    card += '<div class="card-top"><div class="avatar">' + esc(initials) + '</div>';
+    card += '<div><h3>' + esc(c.name) + '</h3><span class="muted">' + esc(c.city) + '</span></div>';
+    card += '<div class="rate">$' + esc(c.rate) + '<small>/day</small></div></div>';
+    card += '<div class="tags">' + rolesOf(c).map(function(r){ return '<span class="tag">' + esc(r) + '</span>'; }).join("");
+    if (c.multi) card += '<span class="tag blue">Multi-role</span>';
+    if (c.union) card += '<span class="tag orange">Union</span>';
+    if (c.avail) card += '<span class="tag green">Available this weekend</span>';
+    card += '</div>';
+    card += '<p><b>Can do:</b> ' + esc(c.skills || c.gear || "ask me") + '</p>';
+    card += '<p><b>Gear:</b> ' + esc(c.gear || "n/a") + '</p>';
+    card += '<p><b>Credits:</b> ' + esc(c.credits || "n/a") + '</p>';
+    if (c.miles) card += '<p>Travels up to ' + esc(c.miles) + ' miles</p>';
+    card += '<button class="btn" onclick="openBook(' + i + ')">Request booking</button></div>';
+    return card;
+  }).join("");
+}
+
+function openBook(i){
+  bookingTarget = allCrew[i];
+  $("modalTitle").textContent = "Request " + bookingTarget.name;
+  $("bookMsg").textContent = "";
+  $("modal").classList.remove("hidden");
+}
+
+$("closeModal").onclick = function(){ $("modal").classList.add("hidden"); };
+
+$("bookForm").onsubmit = function(e){
+  e.preventDefault();
+  var f = new FormData(e.target), req = {to: bookingTarget.name};
+  f.forEach(function(v,k){ req[k] = v; });
+  var all = JSON.parse(localStorage.getItem("crewboard_requests") || "[]");
+  all.push(req);
+  localStorage.setItem("crewboard_requests", JSON.stringify(all));
+  $("bookMsg").textContent = "Request saved (demo). Connect email or SMS to actually deliver it.";
+  e.target.reset();
+};
+
+$("joinForm").onsubmit = function(e){
+  e.preventDefault();
+  var f = e.target;
+  function split(s){ return (s || "").split(",").map(function(x){ return x.trim(); }).filter(Boolean); }
+  var primary = f.role.value === "__other__" ? (f.customRole.value || "Other").trim() : f.role.value;
+  var p = {
+    name: f.name.value, role: primary, roles: split(f.roles.value), skills: split(f.skills.value).join(", "),
+    city: f.city.value, rate: parseInt(f.rate.value,10), miles: parseInt(f.miles.value,10) || 0,
+    gear: f.gear.value, credits: f.credits.value,
+    union: f.union.checked, avail: f.avail.checked, multi: f.multi.checked, email: f.email.value
+  };
+  saved.push(p);
+  localStorage.setItem("crewboard_new", JSON.stringify(saved));
+  allCrew.push(p);
+  render();
+  $("joinMsg").textContent = "Profile added to the directory above (demo, saved in this browser only).";
+  f.reset();
+  $("customRole").style.display = "none";
+};
+
+$("contactForm").onsubmit = function(e){
+  e.preventDefault();
+  var f = new FormData(e.target), r = {};
+  f.forEach(function(v,k){ r[k] = v; });
+  var all = JSON.parse(localStorage.getItem("crewboard_leads") || "[]");
+  all.push(r);
+  localStorage.setItem("crewboard_leads", JSON.stringify(all));
+  $("contactMsg").textContent = "Thanks! (Demo: saved locally. Hook this form to a service to receive real leads.)";
+  e.target.reset();
+};
+
+["fRole","fCity","fRate","fSkill","fAvail","fUnion","fMulti"].forEach(function(id){
+  var el = $(id);
+  if (!el) return;
+  el.addEventListener("input", render);
+  el.addEventListener("change", render);
+});
+
+fillRoles();
+render();
+</script>
 </body>
 </html>
