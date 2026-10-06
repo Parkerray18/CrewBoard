@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Company login | CrewBoard</title>
+<meta name="description" content="Log in to your CrewBoard company account to send booking requests to freelancers.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff6b2c'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="index.html"><span class="mark">C</span>Crew<span>Board</span></a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a class="opt-link" href="directory.html">Directory</a>
+      <a class="opt-link" href="edit-profile.html">My Profile</a>
+      <a class="opt-link" href="requests.html">Requests</a>
+      <span id="authSlot"></span>
+    </nav>
+  </div>
+</header>
+
+<section class="wrap narrow">
+  <p class="eyebrow">Company login</p>
+  <h2>Log in</h2>
+  <div class="authbox">
+    <form id="coLoginForm" class="form">
+      <label class="fld">Work email
+        <input name="email" type="email" placeholder="you@company.com" required>
+      </label>
+      <label class="fld">Password
+        <input name="password" type="password" required>
+      </label>
+      <button class="btn" type="submit" id="coLoginBtn">Log in</button>
+      <p id="coLoginMsg" class="muted"></p>
+    </form>
+    <p id="coStatus" style="margin-top:16px"></p>
+  </div>
+  <p class="muted">Need an account? <a href="company-signup.html">Register your company</a></p>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>CrewBoard</h4>
+        <p>A directory for freelancers across entertainment and sports.</p>
+        <p>Roles, skills and day rates, all in one place.</p>
+      </div>
+      <div>
+        <h4>Freelancers</h4>
+        <p><a href="signup.html">Create a free profile</a></p>
+        <p><a href="directory.html">See the directory</a></p>
+        <p><a href="edit-profile.html">Edit my profile</a></p>
+        <p><a href="requests.html">Booking requests</a></p>
+      </div>
+      <div>
+        <h4>Companies</h4>
+        <p><a href="company.html">Start a free trial</a></p>
+        <p><a href="company-signup.html">Register your company</a></p>
+        <p><a href="index.html#pricing">See pricing</a></p>
+      </div>
+    </div>
+    <p class="disclaimer"><b>CrewBoard is a directory, not an employer.</b> We do not employ freelancers, handle pay, or manage contracts or worker classification. Rates and availability are supplied by freelancers themselves. Always confirm credentials, insurance and union status directly before booking.</p>
+    <p class="disclaimer">&copy; 2026 CrewBoard. All rights reserved.</p>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+var CATEGORIES = {
+  "Production": ["Producer","Production Manager","Production Coordinator","Production Assistant","Stage Manager","Assistant Stage Manager","Talent Wrangler","Runner"],
+  "Camera & Video": ["Camera Op","DP / DOP","Assistant Camera","Utility","Replay / EVS","Video Engineer","Playback","PTZ Operator","Photographer"],
+  "Audio": ["A1","A2","A3","Monitor Engineer","RF Technician","Comms / Intercom","Sound Designer","DJ"],
+  "Lighting & Rigging": ["Lighting Director","Master Electrician","Lighting Tech","Rigger","Climber","Spot Op","Follow Spot"],
+  "Staging & Scenic": ["Stagehand","Carpenter","Scenic Artist","Fly Operator","Automation Tech","Set Builder","Painter"],
+  "Costume & Makeup": ["Wardrobe","Dresser","Hair & Makeup","SFX Makeup","Tailor"],
+  "Art & Props": ["Props Master","Art Director","Set Dresser","Props Assistant"],
+  "Event Ops": ["Event Manager","Venue Ops","Load-In / Load-Out","Crowd Manager","Usher","Ticket / Box Office","Security","Parking / Traffic","Merchandise"],
+  "Technical & Broadcast": ["Broadcast Engineer","IT / Network","Satellite / Transmission","Streaming Tech","Data / Stats","Graphics Operator"],
+  "Sports Specific": ["Scoreboard Operator","Stats Crew","Chain Crew","Umpire / Official","Team Liaison","Athletic Trainer"],
+  "Creative & Talent": ["Director","Choreographer","Music Director","Vocalist","Actor","Dancer","Musician","Host / MC","Voiceover","Content Creator"],
+  "Support": ["Driver","Catering","Craft Services","Medic","Interpreter","Translator","Safety Officer"]
+};
+
+function roleGroups(){
+  var out = "";
+  for (var cat in CATEGORIES){
+    var opts = CATEGORIES[cat].map(function(r){ return "<option>" + r + "</option>"; }).join("");
+    out += '<optgroup label="' + cat + '">' + opts + '</optgroup>';
+  }
+  return out;
+}
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];
+  });
+}
+function rolesOf(p){ return [p.role].concat(p.roles || []).filter(Boolean); }
+function show(id, text, kind){
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.className = "msg " + (kind || "wait");
+  el.textContent = text;
+}
+
+var configured = window.SB_KEY && window.SB_KEY.indexOf("PASTE_") !== 0;
+var sb = null;
+if (configured && window.supabase){
+  sb = window.supabase.createClient(window.SB_URL, window.SB_KEY);
+}
+
+window.addEventListener("DOMContentLoaded", function(){
+  if (!configured){
+    var b = document.createElement("div");
+    b.className = "wrap";
+    b.innerHTML = '<div class="warn"><b>Almost ready:</b> the database key has not been added yet. ' +
+      'Open <code>config.js</code> and paste your Supabase publishable key where it says PASTE_YOUR_PUBLISHABLE_KEY_HERE. ' +
+      'Until then, sign-ups and the directory are switched off.</div>';
+    document.body.insertBefore(b, document.body.children[1] || null);
+  }
+  wireAuthSlot();
+});
+
+async function currentUser(){
+  if (!sb) return null;
+  var r = await sb.auth.getUser();
+  return r.data ? r.data.user : null;
+}
+
+async function wireAuthSlot(){
+  var slot = document.getElementById("authSlot");
+  if (!slot) return;
+  if (!sb){ slot.innerHTML = ""; return; }
+  var u = await currentUser();
+  if (u){
+    slot.innerHTML = '<a href="#" id="logoutLink">Log out</a>';
+    document.getElementById("logoutLink").onclick = async function(e){
+      e.preventDefault();
+      await sb.auth.signOut();
+      location.href = "index.html";
+    };
+  } else {
+    slot.innerHTML = '<a href="signup.html">Sign up</a> <a href="login.html">Log in</a>';
+  }
+}
+
+async function currentCompany(){
+  if (!sb) return null;
+  var u = await currentUser();
+  if (!u) return null;
+  var r = await sb.from("companies").select("*").eq("id", u.id).maybeSingle();
+  return r.data || null;
+}
+
+async function isPayingCompany(){
+  var c = await currentCompany();
+  return !!(c && c.paid);
+}
+</script>
+<script>
+async function showStatus(){
+  var c = await currentCompany();
+  var el = document.getElementById("coStatus");
+  if (!c) return;
+  if (c.paid){
+    el.innerHTML = '<div class="msg ok">Plan active. You can send booking requests from the directory.</div>';
+  } else {
+    el.innerHTML = '<div class="msg wait">Your plan is not active yet. Browsing works; sending requests unlocks once billing is switched on.</div>';
+  }
+}
+
+document.getElementById("coLoginForm").onsubmit = async function(e){
+  e.preventDefault();
+  var f = e.target;
+  if (!sb){ show("coLoginMsg", "The database key has not been added yet.", "err"); return; }
+  document.getElementById("coLoginBtn").disabled = true;
+  var r = await sb.auth.signInWithPassword({ email: f.email.value, password: f.password.value });
+  document.getElementById("coLoginBtn").disabled = false;
+  if (r.error){ show("coLoginMsg", r.error.message, "err"); return; }
+  show("coLoginMsg", "Logged in.", "ok");
+  showStatus();
+};
+
+showStatus();
+</script>
+</body>
+</html>
