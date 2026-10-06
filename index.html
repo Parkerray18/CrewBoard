@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CrewBoard | Book Sports Broadcast & Live Event Crew</title>
+<meta name="description" content="Find available camera ops, utility, PAs, replay and audio crew for sports broadcasts and live events. See day rates up front.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="logo" href="#top">Crew<span>Board</span></a>
+    <nav>
+      <a href="#find">Find Crew</a>
+      <a href="#how">How It Works</a>
+      <a href="#pricing">Pricing</a>
+      <a class="btn small" href="#join">Join as Crew</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <div class="wrap">
+    <h1>Book sports &amp; live event crew in minutes, not days.</h1>
+    <p class="sub">Search camera ops, utility, replay, audio and PAs by city and date. Day rates are shown up front. No bidding, no waiting.</p>
+    <div class="cta-row">
+      <a class="btn" href="#find">Find Crew</a>
+      <a class="btn ghost" href="#join">I'm a Freelancer (Free)</a>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="find">
+  <h2>Find available crew</h2>
+  <p class="muted">Sample profiles shown. Replace them in <code>data.js</code>.</p>
+  <div class="filters">
+    <select id="fRole"><option value="">All roles</option></select>
+    <input id="fCity" type="text" placeholder="City (e.g. Dallas)">
+    <input id="fRate" type="number" min="0" placeholder="Max day rate ($)">
+    <label class="check"><input id="fAvail" type="checkbox"> Available this weekend</label>
+    <label class="check"><input id="fUnion" type="checkbox"> Union only</label>
+  </div>
+  <p id="count" class="muted"></p>
+  <div id="results" class="grid"></div>
+</section>
+
+<section class="band" id="how">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <div class="steps">
+      <div><b>1</b><h3>Crew build a profile</h3><p>Role, day rate, gear, credits and availability. Five minutes, free.</p></div>
+      <div><b>2</b><h3>Producers search</h3><p>Filter by role, city, date and rate to see who is free right now.</p></div>
+      <div><b>3</b><h3>Send a booking request</h3><p>Crew accept or decline in one tap and get a text alert.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="pricing">
+  <h2>Pricing</h2>
+  <div class="plans">
+    <div class="plan">
+      <h3>Crew</h3>
+      <p class="price">Free</p>
+      <ul><li>Public profile with your day rate</li><li>Availability calendar</li><li>Booking requests by text and email</li></ul>
+      <a class="btn" href="#join">Create profile</a>
+    </div>
+    <div class="plan featured">
+      <h3>Companies</h3>
+      <p class="price">$49<small>/month</small></p>
+      <ul><li>Unlimited search and contact</li><li>Saved crew lists and one-click rebook</li><li>Last-minute mode with text alerts</li><li>30-day free trial, no card</li></ul>
+      <a class="btn" href="#contact">Start free trial</a>
+    </div>
+  </div>
+  <p class="muted center">Edit prices in index.html. Suggested test points: $49 and $99.</p>
+</section>
+
+<section class="band" id="join">
+  <div class="wrap narrow">
+    <h2>Join as crew (free)</h2>
+    <p class="muted">Founding Crew get a badge and priority placement at launch.</p>
+    <form id="joinForm" class="form">
+      <input name="name" placeholder="Full name" required>
+      <div class="two">
+        <select name="role" id="joinRole" required></select>
+        <input name="city" placeholder="Home city" required>
+      </div>
+      <div class="two">
+        <input name="rate" type="number" min="0" placeholder="Day rate ($)" required>
+        <input name="miles" type="number" min="0" placeholder="Travel radius (miles)">
+      </div>
+      <input name="gear" placeholder="Gear you own (cameras, lenses, headset...)">
+      <input name="credits" placeholder="Credits (networks, teams, venues)">
+      <input name="email" type="email" placeholder="Email" required>
+      <label class="check"><input type="checkbox" name="union"> Union member (IATSE, NABET)</label>
+      <label class="check"><input type="checkbox" name="avail"> Available this weekend</label>
+      <button class="btn" type="submit">Create my profile</button>
+      <p id="joinMsg" class="muted"></p>
+    </form>
+  </div>
+</section>
+
+<section class="wrap narrow" id="contact">
+  <h2>Companies: get early access</h2>
+  <p class="muted">Tell us what you need and we will set up your free trial.</p>
+  <form id="contactForm" class="form">
+    <input name="company" placeholder="Company name" required>
+    <input name="email" type="email" placeholder="Work email" required>
+    <input name="need" placeholder="What crew do you hire most?">
+    <button class="btn" type="submit">Request access</button>
+    <p id="contactMsg" class="muted"></p>
+  </form>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><b>CrewBoard</b> is a directory, not an employer. We do not handle pay, contracts or classification of workers.</p>
+    <p class="muted">&copy; 2026 CrewBoard. Replace this name everywhere.</p>
+  </div>
+</footer>
+
+<div id="modal" class="modal hidden">
+  <div class="modal-box">
+    <button id="closeModal" class="x" aria-label="Close">&times;</button>
+    <h3 id="modalTitle">Send booking request</h3>
+    <form id="bookForm" class="form">
+      <input name="event" placeholder="Event name" required>
+      <div class="two">
+        <input name="date" type="date" required>
+        <input name="location" placeholder="Venue / city" required>
+      </div>
+      <input name="offer" type="number" placeholder="Offered day rate ($)">
+      <textarea name="message" rows="3" placeholder="Message"></textarea>
+      <button class="btn" type="submit">Send request</button>
+      <p id="bookMsg" class="muted"></p>
+    </form>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
