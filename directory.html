@@ -31,7 +31,7 @@
 <section class="wrap">
   <p class="eyebrow">Search the directory</p>
   <h2>Find freelancers</h2>
-  <p class="muted">Browsing is free for everyone. Sending a booking request requires a company account on an active plan.</p>
+  <p class="muted">Browsing is free for everyone. Open any profile to see their full credits, gear and day rate. Sending a booking request requires a company account on an active plan.</p>
   <p class="muted">Search a skill and everyone who lists it appears, even if it is not their main job.</p>
   <div class="panelbar">
     <div class="filters">
@@ -239,7 +239,7 @@ function renderRows(){
     var safeName = String(p.name || "").replace(/'/g, "");
     var c = '<div class="card">';
     c += '<div class="card-top"><div class="avatar">' + esc(initials) + '</div>';
-    c += '<div><h3>' + esc(p.name) + '</h3><span class="muted">' + esc(p.city || "Location not set") + '</span></div>';
+    c += '<div><h3><a href="profile.html?id=' + encodeURIComponent(p.id) + '" style="text-decoration:none">' + esc(p.name) + '</a></h3><span class="muted">' + esc(p.city || "Location not set") + '</span></div>';
     c += '<div class="rate">$' + esc(p.rate || 0) + '<small>/day</small></div></div>';
     c += '<div class="tags">' + rolesOf(p).map(function(r){ return '<span class="tag">' + esc(r) + '</span>'; }).join("");
     if (p.multi_role) c += '<span class="tag blue">Multi-role</span>';
@@ -250,11 +250,12 @@ function renderRows(){
     if (p.gear) c += '<p><b>Gear:</b> ' + esc(p.gear) + '</p>';
     if (p.credits) c += '<p><b>Credits:</b> ' + esc(p.credits) + '</p>';
     if (p.miles) c += '<p>Travels up to ' + esc(p.miles) + ' miles</p>';
+    c += '<a class="btn sec" href="profile.html?id=' + encodeURIComponent(p.id) + '">View full profile</a>';
     if (canSend){
-      c += '<button class="btn" onclick="openBook(\'' + p.id + '\',\'' + safeName + '\')">Request booking</button>';
+      c += '<button class="btn" style="margin-top:8px" onclick="openBook(\'' + p.id + '\',\'' + safeName + '\')">Request booking</button>';
     } else {
       c += '<p class="muted">Sending a request needs a company account on an active plan.</p>';
-      c += '<a class="btn sec" href="company-signup.html">Register your company</a>';
+      c += '<a class="btn" href="company-signup.html">Register your company</a>';
     }
     c += '</div>';
     return c;
