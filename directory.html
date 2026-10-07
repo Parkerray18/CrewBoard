@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Find Freelancers | CrewBoard</title>
+<title>Search the Directory | CrewBoard</title>
 <meta name="description" content="Search freelancers in entertainment and sports by role, skill, city and day rate. Free to browse.">
 <link rel="canonical" href="https://crewboard.fit/directory.html">
-<meta property="og:title" content="Find Freelancers | CrewBoard">
+<meta property="og:title" content="Search the Directory | CrewBoard">
 <meta property="og:description" content="Search freelancers in entertainment and sports by role, skill, city and day rate. Free to browse.">
 <meta property="og:url" content="https://crewboard.fit/directory.html">
 <meta property="og:type" content="website">
@@ -32,7 +32,6 @@
   <p class="eyebrow">Search the directory</p>
   <h2>Find freelancers</h2>
   <p class="muted">Browsing is free for everyone. Open any profile to see their full credits, gear and day rate. Sending a booking request requires a company account on an active plan.</p>
-  <p class="muted">Search a skill and everyone who lists it appears, even if it is not their main job.</p>
   <div class="panelbar">
     <div class="filters">
       <select id="fRole"><option value="">All roles</option></select>
@@ -48,35 +47,6 @@
   <div id="results" class="grid"></div>
 </section>
 
-<div id="bookModal" class="modal hidden">
-  <div class="modal-box">
-    <button id="bookClose" class="x" aria-label="Close">&times;</button>
-    <h3 id="bookTitle">Send booking request</h3>
-    <p class="muted" id="bookTo"></p>
-    <form id="bookForm" class="form">
-      <label class="fld">Event name
-        <input name="event_name" placeholder="e.g. NBA game, festival" required>
-      </label>
-      <div class="two">
-        <label class="fld">Date
-          <input name="event_date" type="date" required>
-        </label>
-        <label class="fld">Venue / city
-          <input name="location" placeholder="e.g. Arena, Dallas" required>
-        </label>
-      </div>
-      <label class="fld">Offered day rate ($) <span class="opt">optional</span>
-        <input name="offered_rate" type="number" min="0" placeholder="e.g. 500">
-      </label>
-      <label class="fld">Message
-        <textarea name="message" rows="3" placeholder="Role needed, call times, anything else useful"></textarea>
-      </label>
-      <button class="btn" type="submit" id="bookSend">Send request</button>
-      <p id="bookMsg" class="muted"></p>
-    </form>
-  </div>
-</div>
-
 <footer>
   <div class="wrap">
     <div class="foot-grid">
@@ -88,14 +58,12 @@
       <div>
         <h4>Freelancers</h4>
         <p><a href="signup.html">Create a free profile</a></p>
-        <p><a href="directory.html">See the directory</a></p>
         <p><a href="edit-profile.html">Edit my profile</a></p>
         <p><a href="requests.html">Booking requests</a></p>
       </div>
       <div>
         <h4>Companies</h4>
         <p><a href="company-signup.html">Register your company</a></p>
-        <p><a href="company-login.html">Company login</a></p>
         <p><a href="index.html#pricing">See pricing</a></p>
       </div>
     </div>
@@ -105,95 +73,6 @@
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
-<script>
-var CATEGORIES = {
-  "Production": ["Producer","Production Manager","Production Coordinator","Production Assistant","Stage Manager","Assistant Stage Manager","Talent Wrangler","Runner"],
-  "Camera & Video": ["Camera Op","DP / DOP","Assistant Camera","Utility","Replay / EVS","Video Engineer","Playback","PTZ Operator","Photographer"],
-  "Audio": ["A1","A2","A3","Monitor Engineer","RF Technician","Comms / Intercom","Sound Designer","DJ"],
-  "Lighting & Rigging": ["Lighting Director","Master Electrician","Lighting Tech","Rigger","Climber","Spot Op","Follow Spot"],
-  "Staging & Scenic": ["Stagehand","Carpenter","Scenic Artist","Fly Operator","Automation Tech","Set Builder","Painter"],
-  "Costume & Makeup": ["Wardrobe","Dresser","Hair & Makeup","SFX Makeup","Tailor"],
-  "Art & Props": ["Props Master","Art Director","Set Dresser","Props Assistant"],
-  "Event Ops": ["Event Manager","Venue Ops","Load-In / Load-Out","Crowd Manager","Usher","Ticket / Box Office","Security","Parking / Traffic","Merchandise"],
-  "Technical & Broadcast": ["Broadcast Engineer","IT / Network","Satellite / Transmission","Streaming Tech","Data / Stats","Graphics Operator"],
-  "Sports Specific": ["Scoreboard Operator","Stat Crew","Chain Crew","Umpire / Official","Team Liaison","Athletic Trainer"],
-  "Creative & Talent": ["Director","Choreographer","Music Director","Vocalist","Actor","Dancer","Musician","Host / MC","Voiceover","Content Creator"],
-  "Support": ["Driver","Catering","Craft Services","Medic","Interpreter","Translator","Safety Officer"]
-};
-
-function roleGroups(){
-  var out = "";
-  for (var cat in CATEGORIES){
-    var opts = CATEGORIES[cat].map(function(r){ return "<option>" + r + "</option>"; }).join("");
-    out += '<optgroup label="' + cat + '">' + opts + '</optgroup>';
-  }
-  return out;
-}
-function esc(s){
-  return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){
-    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];
-  });
-}
-function rolesOf(p){ return [p.role].concat(p.roles || []).filter(Boolean); }
-function show(id, text, kind){
-  var el = document.getElementById(id);
-  if (!el) return;
-  el.className = "msg " + (kind || "wait");
-  el.textContent = text;
-}
-
-var configured = window.SB_KEY && window.SB_KEY.indexOf("PASTE_") !== 0;
-var sb = null;
-if (configured && window.supabase){
-  sb = window.supabase.createClient(window.SB_URL, window.SB_KEY);
-}
-
-window.addEventListener("DOMContentLoaded", function(){
-  if (!configured){
-    var b = document.createElement("div");
-    b.className = "wrap";
-    b.innerHTML = '<div class="warn"><b>Almost ready:</b> the database connection is being set up. Please check back shortly.</div>';
-    document.body.insertBefore(b, document.body.children[1] || null);
-  }
-  wireAuthSlot();
-});
-
-async function currentUser(){
-  if (!sb) return null;
-  var r = await sb.auth.getUser();
-  return r.data ? r.data.user : null;
-}
-
-async function wireAuthSlot(){
-  var slot = document.getElementById("authSlot");
-  if (!slot) return;
-  if (!sb){ slot.innerHTML = ""; return; }
-  var u = await currentUser();
-  if (u){
-    slot.innerHTML = '<a href="#" id="logoutLink">Log out</a>';
-    document.getElementById("logoutLink").onclick = async function(e){
-      e.preventDefault();
-      await sb.auth.signOut();
-      location.href = "index.html";
-    };
-  } else {
-    slot.innerHTML = '<a href="signup.html">Sign up</a> <a href="login.html">Log in</a>';
-  }
-}
-
-async function currentCompany(){
-  if (!sb) return null;
-  var u = await currentUser();
-  if (!u) return null;
-  var r = await sb.from("companies").select("*").eq("id", u.id).maybeSingle();
-  return r.data || null;
-}
-
-async function isPayingCompany(){
-  var c = await currentCompany();
-  return !!(c && c.paid);
-}
-</script>
 <script>
 var ROWS = [];
 var COMPANY = null;
@@ -208,78 +87,57 @@ function renderRows(){
   var multi = document.getElementById("fMulti").checked;
   var union = document.getElementById("fUnion").checked;
 
-  var list = ROWS.filter(function(p){
-    if (role && rolesOf(p).indexOf(role) === -1) return false;
-    if (city && String(p.city || "").toLowerCase().indexOf(city) === -1) return false;
-    if (maxRate && p.rate > maxRate) return false;
-    if (avail && !p.available_now) return false;
-    if (multi && !p.multi_role) return false;
-    if (union && !p.union_member) return false;
+  var list = ROWS.filter(function(c){
+    var allRoles = [c.role].concat(c.roles || []);
+    if (role && allRoles.indexOf(role) === -1) return false;
+    if (city && String(c.city || "").toLowerCase().indexOf(city) === -1) return false;
+    if (maxRate && c.rate > maxRate) return false;
+    if (avail && !c.available_now) return false;
+    if (multi && !c.multi_role) return false;
+    if (union && !c.union_member) return false;
     if (skill){
-      var hay = rolesOf(p).join(" ") + " " + (p.skills || "");
+      var hay = allRoles.join(" ") + " " + (c.skills || "");
       if (hay.toLowerCase().indexOf(skill) === -1) return false;
     }
     return true;
   });
 
-  document.getElementById("count").textContent =
-    list.length + " freelancer" + (list.length === 1 ? "" : "s") + " found";
+  document.getElementById("count").textContent = list.length + " freelancer" + (list.length === 1 ? "" : "s") + " found";
 
-  var canSend = !!(COMPANY && COMPANY.paid);
-
-  if (!list.length){
-    document.getElementById("results").innerHTML =
-      '<p class="muted">No matches yet. Try widening your filters' +
-      (ROWS.length ? "." : ", or be the first to create a profile.") + '</p>';
-    return;
-  }
-
-  document.getElementById("results").innerHTML = list.map(function(p){
-    var initials = String(p.name || "?").split(" ").map(function(x){ return x[0]; }).join("").slice(0,2);
-    var safeName = String(p.name || "").replace(/'/g, "");
-    var av = p.avatar_url
-      ? '<img src="' + esc(p.avatar_url) + '" alt="">'
-      : esc(initials);
-    var href = 'profile.html?' + (p.username
-      ? 'u=' + encodeURIComponent(p.username)
-      : 'id=' + encodeURIComponent(p.id));
-    var c = '<div class="card">';
-    c += '<div class="card-top"><div class="avatar">' + av + '</div>';
-    c += '<div><h3><a href="' + href + '">' + esc(p.name) + '</a></h3><span class="muted">' + esc(p.city || "Location not set") + '</span></div>';
-    c += '<div class="rate">$' + esc(p.rate || 0) + '<small>/day</small></div></div>';
-    c += '<div class="tags">' + rolesOf(p).map(function(r){ return '<span class="tag">' + esc(r) + '</span>'; }).join("");
-    if (p.multi_role) c += '<span class="tag blue">Multi-role</span>';
-    if (p.union_member) c += '<span class="tag orange">Union</span>';
-    if (p.available_now) c += '<span class="tag green">Available now</span>';
-    c += '</div>';
-    if (p.skills) c += '<p><b>Can do:</b> ' + esc(p.skills) + '</p>';
-    if (p.gear) c += '<p><b>Gear:</b> ' + esc(p.gear) + '</p>';
-    if (p.credits) c += '<p><b>Credits:</b> ' + esc(p.credits) + '</p>';
-    if (p.miles) c += '<p>Travels up to ' + esc(p.miles) + ' miles</p>';
-    c += '<a class="btn sec" href="' + href + '">View full profile</a>';
-    if (canSend){
-      c += '<button class="btn" style="margin-top:8px" onclick="openBook(\'' + p.id + '\',\'' + safeName + '\')">Request booking</button>';
-    } else {
-      c += '<p class="muted">Sending a request needs a company account on an active plan.</p>';
-      c += '<a class="btn" href="company-signup.html">Register your company</a>';
-    }
-    c += '</div>';
-    return c;
+  var html = list.map(function(c){
+    var initials = (c.name || "?").split(" ").map(function(x){ return x.charAt(0); }).join("").slice(0,2).toUpperCase();
+    var link = c.username ? ("profile.html?u=" + encodeURIComponent(c.username)) : ("profile.html?id=" + encodeURIComponent(c.id));
+    var allRoles = [c.role].concat(c.roles || []);
+    var tags = allRoles.map(function(r){ return '<span class="tag">' + esc(r) + '</span>'; }).join("");
+    if (c.multi_role) tags += '<span class="tag blue">Multi-role</span>';
+    if (c.union_member) tags += '<span class="tag orange">Union</span>';
+    if (c.available_now) tags += '<span class="tag green">Available now</span>';
+    var avatarInner = c.avatar_url ? '<img src="' + esc(c.avatar_url) + '" alt="">' : esc(initials);
+    var card = '<div class="card">';
+    card += '<div class="card-top"><div class="avatar">' + avatarInner + '</div>';
+    card += '<div><h3><a href="' + link + '">' + esc(c.name) + '</a></h3>';
+    card += '<span class="muted">' + esc(c.city || "Location not set") + '</span></div>';
+    card += '<div class="rate">$' + esc(c.rate || 0) + '<small>/day</small></div></div>';
+    card += '<div class="tags">' + tags + '</div>';
+    if (c.skills) card += '<p><b>Can do:</b> ' + esc(c.skills) + '</p>';
+    card += '<a class="btn sec" href="' + link + '">View full profile</a>';
+    card += '</div>';
+    return card;
   }).join("");
+
+  document.getElementById("results").innerHTML = html || '<p class="muted">No matches yet. Try widening your filters, or be the first to create a profile.</p>';
 }
 
 async function loadProfiles(){
   if (!sb){
-    document.getElementById("count").textContent = "";
-    document.getElementById("results").innerHTML =
-      '<p class="muted">The directory switches on once the database connection is ready.</p>';
+    document.getElementById("results").innerHTML = '<p class="muted">The directory switches on once the database connection is ready.</p>';
     return;
   }
   var u = await currentUser();
   if (u) COMPANY = await currentCompany();
   var r = await sb.from("profiles_public").select("*").order("created_at", { ascending: false });
   if (r.error){
-    r = await sb.from("profiles").select("id, name, role, roles, skills, city, rate, miles, gear, credits, union_member, multi_role, available_now, created_at").order("created_at", { ascending: false });
+    r = await sb.from("profiles").select("id,name,role,roles,skills,city,rate,miles,gear,credits,union_member,multi_role,available_now,created_at,avatar_url,username").order("created_at", { ascending: false });
   }
   if (r.error){
     document.getElementById("results").innerHTML = '<p class="muted">Could not load profiles: ' + esc(r.error.message) + '</p>';
