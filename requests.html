@@ -13,11 +13,6 @@
 <meta name="theme-color" content="#0a1a2f">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff6b2c'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
-<style>
-.reqbadge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;
-  padding:0 5px;margin-left:6px;border-radius:9px;background:var(--accent);color:#fff;
-  font-size:.72rem;font-weight:800;line-height:1;vertical-align:middle}
-</style>
 </head>
 <body>
 <header class="nav">
@@ -107,18 +102,12 @@ function show(id, text, kind){
 }
 
 var configured = window.SB_KEY && window.SB_KEY.indexOf("PASTE_") !== 0;
-var sb = null;
-if (configured && window.supabase){
+var sb = window.CB_SB || null;
+if (!sb && configured && window.supabase){
   sb = window.supabase.createClient(window.SB_URL, window.SB_KEY);
 }
 
 window.addEventListener("DOMContentLoaded", function(){
-  if (!configured){
-    var b = document.createElement("div");
-    b.className = "wrap";
-    b.innerHTML = '<div class="warn"><b>Almost ready:</b> the database connection is being set up. Please check back shortly.</div>';
-    document.body.insertBefore(b, document.body.children[1] || null);
-  }
   wireAuthSlot();
 });
 
@@ -144,39 +133,6 @@ async function wireAuthSlot(){
     slot.innerHTML = '<a href="signup.html">Sign up</a> <a href="login.html">Log in</a>';
   }
 }
-
-// ---------- Unread booking-request badge ----------
-// Counts pending requests addressed to the signed-in freelancer and shows
-// the number next to "Requests" in the nav. A nudge for someone already on
-// the site; email notification is a separate job.
-async function showRequestBadge(){
-  if (!sb) return;
-  var u = await currentUser();
-  if (!u) return;
-
-  var link = null;
-  var links = document.querySelectorAll(".nav nav a");
-  for (var i = 0; i < links.length; i++){
-    if (links[i].getAttribute("href") === "requests.html"){ link = links[i]; break; }
-  }
-  if (!link) return;
-
-  var r = await sb.from("bookings").select("id").eq("freelancer_id", u.id).eq("status", "pending");
-  if (r.error || !r.data) return;
-
-  var n = r.data.length;
-  if (n === 0){
-    var old = link.querySelector(".reqbadge");
-    if (old) old.remove();
-    link.style.removeProperty("font-weight");
-    return;
-  }
-
-  link.innerHTML = 'Requests <span class="reqbadge">' + n + '</span>';
-  link.style.fontWeight = "700";
-}
-
-window.addEventListener("DOMContentLoaded", function(){ showRequestBadge(); });
 </script>
 <script>
 var USER = null;
@@ -244,10 +200,10 @@ async function loadRequests(){
 
 async function respond(id, status){
   if (!sb || !USER) return;
-  var r = await sb.from("bookings").update({ status: status }).where("id", "eq", id);
+  var r = await sb.from("bookings").update({ status: status }).eq("id", id);
   if (r.error){ alert("Could not update: " + r.error.message); return; }
   loadRequests();
-  showRequestBadge();
+  if (window.cbShowRequestBadge) window.cbShowRequestBadge();
 }
 window.respond = respond;
 
