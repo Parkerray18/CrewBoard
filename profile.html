@@ -21,6 +21,9 @@
 .prof-avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .prof-name{font-size:clamp(1.6rem,4vw,2.3rem);font-weight:800;letter-spacing:-.02em;margin:0 0 4px;line-height:1.1}
 .prof-meta{color:var(--muted);font-size:1rem;margin:0}
+.prof-share{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86rem;
+  background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 11px;
+  display:none;margin-top:10px;color:var(--navy2);word-break:break-all}
 .prof-rate{margin-left:auto;text-align:right}
 .prof-rate .n{font-size:2rem;font-weight:800;letter-spacing:-.02em;display:block;line-height:1.05}
 .prof-rate small{color:var(--muted);font-size:.82rem}
@@ -50,7 +53,7 @@
 <body>
 <header class="nav">
   <div class="nav-inner">
-    <a class="logo" href="index.html"><span class="mark">C</span>Crew<span>Board</span></a>
+    <a class="logo" href="index.html"><span class="mark">C</span><span class="wordmark">CrewBoard</span></a>
     <nav>
       <a href="index.html">Home</a>
       <a class="opt-link" href="directory.html">Directory</a>
@@ -248,6 +251,10 @@ function renderProfile(p, canContact){
   h += '<div class="prof-avatar">' + av + '</div>';
   h += '<div><h1 class="prof-name">' + esc(p.name) + '</h1>';
   h += '<p class="prof-meta">' + esc(p.city || "Location not set") + '</p>';
+  if (p.username){
+    h += '<span class="prof-share" id="shareLink" style="display:block">' +
+         'crewboard.fit/profile.html?u=' + esc(p.username) + '</span>';
+  }
   h += '<div class="tags" style="margin-top:12px">' +
        roles.map(function(r){ return '<span class="tag">' + esc(r) + '</span>'; }).join("");
   if (p.multi_role) h += '<span class="tag blue">Multi-role</span>';
@@ -304,11 +311,12 @@ function renderProfile(p, canContact){
 
 async function loadProfile(){
   var id = getParam("id");
+  var handle = getParam("u");
   if (!sb){
     document.getElementById("loading").textContent = "Profiles are being set up. Please check back shortly.";
     return;
   }
-  if (!id){
+  if (!id && !handle){
     document.getElementById("loading").innerHTML =
       'No profile selected. <a href="directory.html">Back to the directory</a>.';
     return;
@@ -318,7 +326,14 @@ async function loadProfile(){
   if (u) COMPANY = await currentCompany();
   var canContact = !!(COMPANY && COMPANY.paid);
 
-  var r = await sb.from("profiles_public").select("*").eq("id", id).maybeSingle();
+  // Prefer the readable link (?u=marcus-reed); the uuid still works as a fallback.
+  var r = null;
+  if (handle){
+    r = await sb.from("profiles_public").select("*").ilike("username", handle).maybeSingle();
+  }
+  if ((!r || !r.data || r.error) && id){
+    r = await sb.from("profiles_public").select("*").eq("id", id).maybeSingle();
+  }
   if (r.error || !r.data){
     document.getElementById("loading").innerHTML =
       'Profile not found. <a href="directory.html">Back to the directory</a>.';
