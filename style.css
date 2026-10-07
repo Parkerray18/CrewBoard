@@ -108,10 +108,20 @@ footer a{color:#dbe4f0;text-decoration:none}
 .foot-grid h4{color:#fff;font-size:.82rem;text-transform:uppercase;letter-spacing:.1em;margin:0 0 12px}
 .foot-grid p{margin:0 0 6px}
 .disclaimer{border-top:1px solid rgba(255,255,255,.12);padding-top:20px;font-size:.83rem;line-height:1.6}
-@media(max-width:720px){
-  .nav nav a.opt-link{display:none}
+@media(max-width:760px){
+  .nav-inner{flex-wrap:wrap;gap:10px}
+  .nav nav{gap:16px;row-gap:8px}
+  .nav a{font-size:.88rem}
+  .nav .btn.small{padding:8px 13px;font-size:.85rem}
   .foot-grid{grid-template-columns:1fr}
   .hero .wrap{padding:66px 20px 62px}
   .wrap{padding:48px 20px}
+}
+@media(max-width:560px){
+  .nav-inner{padding:12px 16px}
+  .nav nav{gap:12px}
+  .nav a{font-size:.83rem}
+  .nav .logo{font-size:1.05rem}
+  .nav .mark{width:22px;height:22px;font-size:12px;border-radius:7px}
 }
 @media(max-width:520px){.two{grid-template-columns:1fr}}
