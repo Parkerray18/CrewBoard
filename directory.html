@@ -198,6 +198,7 @@ function renderRows(){
   var avail = document.getElementById("fAvail").checked;
   var multi = document.getElementById("fMulti").checked;
   var union = document.getElementById("fUnion").checked;
+  var canBook = !!(COMPANY && COMPANY.paid);
 
   var list = ROWS.filter(function(c){
     var allRoles = [c.role].concat(c.roles || []);
@@ -233,6 +234,12 @@ function renderRows(){
     card += '<div class="tags">' + tags + '</div>';
     if (c.skills) card += '<p><b>Can do:</b> ' + esc(c.skills) + '</p>';
     card += '<a class="btn sec" href="' + link + '">View full profile</a>';
+    if (canBook){
+      card += '<button class="btn" onclick="openBook(\'' + esc(c.id) + '\',\'' +
+              esc(c.name).replace(/'/g, "\\'") + '\')">Request booking</button>';
+    } else {
+      card += '<a class="btn sec" href="company-signup.html">Subscribe to book</a>';
+    }
     card += '</div>';
     return card;
   }).join("");
