@@ -232,9 +232,23 @@ async function loadProfiles(){
 
 function openBook(id, name){
   TARGET = id;
+  var to = document.getElementById("bookTo");
+  if (to){
+    to.textContent = "This request goes to " +
+      (name ? name : "the freelancer") + "'s CrewBoard inbox.";
+  }
+  var msg = document.getElementById("bookMsg");
+  if (msg){ msg.className = "muted"; msg.textContent = ""; }
+  var t = document.getElementById("bookTitle");
+  if (t){ t.textContent = "Send booking request"; }
+  var modal = document.getElementById("bookModal");
+  if (modal) modal.classList.remove("hidden");
 }
 
-function closeBook(){}
+function closeBook(){
+  var modal = document.getElementById("bookModal");
+  if (modal) modal.classList.add("hidden");
+}
 window.openBook = openBook;
 window.closeBook = closeBook;
 
