@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Freelancer Profile | CrewBoard</title>
+<meta name="description" content="View a CrewBoard freelancer profile: roles, skills, day rate, gear and credits.">
+<link rel="canonical" href="https://crewboard.fit/profile.html">
+<meta property="og:title" content="Freelancer Profile | CrewBoard">
+<meta property="og:description" content="View a CrewBoard freelancer profile: roles, skills, day rate, gear and credits.">
+<meta property="og:url" content="https://crewboard.fit/profile.html">
+<meta property="og:type" content="profile">
+<meta name="theme-color" content="#0a1a2f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff6b2c'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<style>
+.prof-head{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;margin-bottom:6px}
+.prof-avatar{width:84px;height:84px;border-radius:50%;flex:0 0 auto;
+  background:linear-gradient(135deg,var(--navy2),#2b5ea3);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.9rem;letter-spacing:.02em}
+.prof-name{font-size:clamp(1.6rem,4vw,2.3rem);font-weight:800;letter-spacing:-.02em;margin:0 0 4px;line-height:1.1}
+.prof-meta{color:var(--muted);font-size:1rem;margin:0}
+.prof-rate{margin-left:auto;text-align:right}
+.prof-rate .n{font-size:2rem;font-weight:800;letter-spacing:-.02em;display:block;line-height:1.05}
+.prof-rate small{color:var(--muted);font-size:.82rem}
+.panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:26px;
+  box-shadow:var(--shadow);margin-top:22px}
+.panel h3{margin:0 0 14px;font-size:1.1rem}
+.kv{display:grid;grid-template-columns:170px 1fr;gap:10px 18px;font-size:.96rem}
+.kv dt{color:var(--muted);font-weight:600}
+.kv dd{margin:0;color:var(--text)}
+.credit-list{list-style:none;padding:0;margin:0;columns:2;column-gap:26px}
+.credit-list li{padding:7px 0;border-bottom:1px solid var(--line);break-inside:avoid;font-size:.96rem}
+.locked{background:#fff8e6;border:1px solid #f0dfb0;border-radius:var(--radius);padding:26px;margin-top:22px}
+.locked h3{margin:0 0 8px;font-size:1.1rem;color:#7a5b12}
+.locked p{margin:0 0 16px;color:#7a5b12;font-size:.95rem}
+.unlocked{background:var(--greenbg);border:1px solid #bde8cd;border-radius:var(--radius);padding:26px;margin-top:22px}
+.unlocked h3{margin:0 0 8px;font-size:1.1rem;color:var(--green)}
+.unlocked p{margin:0 0 16px;color:var(--green);font-size:.95rem}
+.backlink{display:inline-block;margin-bottom:18px;font-size:.94rem;text-decoration:none}
+@media(max-width:640px){
+  .kv{grid-template-columns:1fr;gap:2px 0}
+  .kv dt{margin-top:10px}
+  .credit-list{columns:1}
+  .prof-rate{margin-left:0;text-align:left;width:100%}
+}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="index.html"><span class="mark">C</span>Crew<span>Board</span></a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a class="opt-link" href="directory.html">Directory</a>
+      <a class="opt-link" href="edit-profile.html">My Profile</a>
+      <a class="opt-link" href="requests.html">Requests</a>
+      <span id="authSlot"></span>
+    </nav>
+  </div>
+</header>
+
+<section class="wrap" id="profileRoot">
+  <p id="loading" class="muted">Loading profile&hellip;</p>
+  <div id="content" style="display:none"></div>
+</section>
+
+<div id="bookModal" class="modal hidden">
+  <div class="modal-box">
+    <button id="bookClose" class="x" aria-label="Close">&times;</button>
+    <h3 id="bookTitle">Send booking request</h3>
+    <p class="muted" id="bookTo"></p>
+    <form id="bookForm" class="form">
+      <label class="fld">Event name
+        <input name="event_name" placeholder="e.g. NBA game, festival" required>
+      </label>
+      <div class="two">
+        <label class="fld">Date
+          <input name="event_date" type="date" required>
+        </label>
+        <label class="fld">Venue / city
+          <input name="location" placeholder="e.g. Arena, Dallas" required>
+        </label>
+      </div>
+      <label class="fld">Offered day rate ($) <span class="opt">optional</span>
+        <input name="offered_rate" type="number" min="0" placeholder="e.g. 500">
+      </label>
+      <label class="fld">Message
+        <textarea name="message" rows="3" placeholder="Role needed, call times, anything else useful"></textarea>
+      </label>
+      <button class="btn" type="submit" id="bookSend">Send request</button>
+      <p id="bookMsg" class="muted"></p>
+    </form>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>CrewBoard</h4>
+        <p>A directory for freelancers across entertainment and sports.</p>
+        <p>Roles, skills and day rates, all in one place.</p>
+      </div>
+      <div>
+        <h4>Freelancers</h4>
+        <p><a href="signup.html">Create a free profile</a></p>
+        <p><a href="directory.html">See the directory</a></p>
+        <p><a href="edit-profile.html">Edit my profile</a></p>
+        <p><a href="requests.html">Booking requests</a></p>
+      </div>
+      <div>
+        <h4>Companies</h4>
+        <p><a href="company-signup.html">Register your company</a></p>
+        <p><a href="company-login.html">Company login</a></p>
+        <p><a href="index.html#pricing">See pricing</a></p>
+      </div>
+    </div>
+    <p class="disclaimer"><b>CrewBoard is a directory, not an employer.</b> We do not employ freelancers, handle pay, or manage contracts or worker classification. Rates and availability are supplied by freelancers themselves. Always confirm credentials, insurance and union status directly before booking.</p>
+    <p class="disclaimer">&copy; 2026 CrewBoard &middot; crewboard.fit</p>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+var CATEGORIES = {
+  "Production": ["Producer","Production Manager","Production Coordinator","Production Assistant","Stage Manager","Assistant Stage Manager","Talent Wrangler","Runner"],
+  "Camera & Video": ["Camera Op","DP / DOP","Assistant Camera","Utility","Replay / EVS","Video Engineer","Playback","PTZ Operator","Photographer"],
+  "Audio": ["A1","A2","A3","Monitor Engineer","RF Technician","Comms / Intercom","Sound Designer","DJ"],
+  "Lighting & Rigging": ["Lighting Director","Master Electrician","Lighting Tech","Rigger","Climber","Spot Op","Follow Spot"],
+  "Staging & Scenic": ["Stagehand","Carpenter","Scenic Artist","Fly Operator","Automation Tech","Set Builder","Painter"],
+  "Costume & Makeup": ["Wardrobe","Dresser","Hair & Makeup","SFX Makeup","Tailor"],
+  "Art & Props": ["Props Master","Art Director","Set Dresser","Props Assistant"],
+  "Event Ops": ["Event Manager","Venue Ops","Load-In / Load-Out","Crowd Manager","Usher","Ticket / Box Office","Security","Parking / Traffic","Merchandise"],
+  "Technical & Broadcast": ["Broadcast Engineer","IT / Network","Satellite / Transmission","Streaming Tech","Data / Stats","Graphics Operator"],
+  "Sports Specific": ["Scoreboard Operator","Stat Crew","Chain Crew","Umpire / Official","Team Liaison","Athletic Trainer"],
+  "Creative & Talent": ["Director","Choreographer","Music Director","Vocalist","Actor","Dancer","Musician","Host / MC","Voiceover","Content Creator"],
+  "Support": ["Driver","Catering","Craft Services","Medic","Interpreter","Translator","Safety Officer"]
+};
+
+function roleGroups(){
+  var out = "";
+  for (var cat in CATEGORIES){
+    var opts = CATEGORIES[cat].map(function(r){ return "<option>" + r + "</option>"; }).join("");
+    out += '<optgroup label="' + cat + '">' + opts + '</optgroup>';
+  }
+  return out;
+}
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];
+  });
+}
+function rolesOf(p){ return [p.role].concat(p.roles || []).filter(Boolean); }
+function show(id, text, kind){
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.className = "msg " + (kind || "wait");
+  el.textContent = text;
+}
+
+var configured = window.SB_KEY && window.SB_KEY.indexOf("PASTE_") !== 0;
+var sb = null;
+if (configured && window.supabase){
+  sb = window.supabase.createClient(window.SB_URL, window.SB_KEY);
+}
+
+window.addEventListener("DOMContentLoaded", function(){
+  if (!configured){
+    var b = document.createElement("div");
+    b.className = "wrap";
+    b.innerHTML = '<div class="warn"><b>Almost ready:</b> the database connection is being set up. Please check back shortly.</div>';
+    document.body.insertBefore(b, document.body.children[1] || null);
+  }
+  wireAuthSlot();
+});
+
+async function currentUser(){
+  if (!sb) return null;
+  var r = await sb.auth.getUser();
+  return r.data ? r.data.user : null;
+}
+
+async function wireAuthSlot(){
+  var slot = document.getElementById("authSlot");
+  if (!slot) return;
+  if (!sb){ slot.innerHTML = ""; return; }
+  var u = await currentUser();
+  if (u){
+    slot.innerHTML = '<a href="#" id="logoutLink">Log out</a>';
+    document.getElementById("logoutLink").onclick = async function(e){
+      e.preventDefault();
+      await sb.auth.signOut();
+      location.href = "index.html";
+    };
+  } else {
+    slot.innerHTML = '<a href="signup.html">Sign up</a> <a href="login.html">Log in</a>';
+  }
+}
+
+async function currentCompany(){
+  if (!sb) return null;
+  var u = await currentUser();
+  if (!u) return null;
+  var r = await sb.from("companies").select("*").eq("id", u.id).maybeSingle();
+  return r.data || null;
+}
+
+async function isPayingCompany(){
+  var c = await currentCompany();
+  return !!(c && c.paid);
+}
+</script>
+<script>
+var PERSON = null;
+var COMPANY = null;
+
+function getParam(name){
+  var m = new RegExp("[?&]" + name + "=([^&]*)").exec(location.search);
+  return m ? decodeURIComponent(m[1].replace(/\+/g, " ")) : null;
+}
+
+function fmtDate(d){
+  if (!d) return "";
+  try {
+    return new Date(d + "T00:00:00").toLocaleDateString(undefined,
+      { month:"short", year:"numeric" });
+  } catch (e) { return d; }
+}
+
+function line(label, value){
+  if (!value) return "";
+  return '<dt>' + esc(label) + '</dt><dd>' + esc(value) + '</dd>';
+}
+
+function renderProfile(p, canContact){
+  PERSON = p;
+  var initials = String(p.name || "?").split(" ").map(function(x){ return x[0]; }).join("").slice(0,2);
+  var roles = rolesOf(p);
+
+  var h = '<a class="backlink" href="directory.html">&larr; Back to the directory</a>';
+
+  h += '<div class="prof-head">';
+  h += '<div class="prof-avatar">' + esc(initials) + '</div>';
+  h += '<div><h1 class="prof-name">' + esc(p.name) + '</h1>';
+  h += '<p class="prof-meta">' + esc(p.city || "Location not set") + '</p>';
+  h += '<div class="tags" style="margin-top:12px">' +
+       roles.map(function(r){ return '<span class="tag">' + esc(r) + '</span>'; }).join("");
+  if (p.multi_role) h += '<span class="tag blue">Multi-role</span>';
+  if (p.union_member) h += '<span class="tag orange">Union</span>';
+  if (p.available_now) h += '<span class="tag green">Available now</span>';
+  h += '</div></div>';
+  h += '<div class="prof-rate"><span class="n">$' + esc(p.rate || 0) + '</span><small>per day</small></div>';
+  h += '</div>';
+
+  h += '<div class="panel"><h3>Details</h3><dl class="kv">';
+  h += line("Primary role", p.role);
+  if ((p.roles || []).length) h += line("Also works as", (p.roles || []).join(", "));
+  if (p.skills) h += line("Skills", p.skills);
+  if (p.miles) h += line("Travel radius", p.miles + " miles");
+  h += line("Availability", p.available_now ? "Available now" : "Ask for dates");
+  h += line("Union", p.union_member ? "Union member" : "Non-union");
+  h += line("Member since", fmtDate((p.created_at || "").slice(0,10)));
+  h += '</dl></div>';
+
+  if (p.gear){
+    h += '<div class="panel"><h3>Gear and equipment</h3><p class="muted" style="margin:0">' + esc(p.gear) + '</p></div>';
+  }
+  if (p.credits){
+    var items = String(p.credits).split(",").map(function(s){ return s.trim(); }).filter(Boolean);
+    h += '<div class="panel"><h3>Credits</h3><ul class="credit-list">' +
+         items.map(function(c){ return '<li>' + esc(c) + '</li>'; }).join("") + '</ul></div>';
+  }
+
+  if (canContact){
+    h += '<div class="unlocked">';
+    h += '<h3>Your plan is active</h3>';
+    h += '<p>Send a booking request and ' + esc((p.name || "this freelancer").split(" ")[0]) +
+         ' gets it straight in their CrewBoard inbox.</p>';
+    h += '<button class="btn" id="reqBtn">Send booking request</button>';
+    h += '</div>';
+  } else {
+    h += '<div class="locked">';
+    h += '<h3>Contact details are for paying companies</h3>';
+    h += '<p>This profile is free to view. Sending a booking request needs a company account on an active plan &mdash; ' +
+         '$74.99 a month, or $720 a year. Freelancers never get charged, and their contact details stay private until a company is subscribed.</p>';
+    h += '<a class="btn" href="company-signup.html">Register your company</a> ';
+    h += '<a class="btn sec" href="company-login.html">Company log in</a>';
+    h += '</div>';
+  }
+
+  document.getElementById("content").innerHTML = h;
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("content").style.display = "block";
+  document.title = (p.name || "Freelancer") + " | CrewBoard";
+
+  var btn = document.getElementById("reqBtn");
+  if (btn) btn.onclick = openBook;
+}
+
+async function loadProfile(){
+  var id = getParam("id");
+  if (!sb){
+    document.getElementById("loading").textContent = "Profiles are being set up. Please check back shortly.";
+    return;
+  }
+  if (!id){
+    document.getElementById("loading").innerHTML =
+      'No profile selected. <a href="directory.html">Back to the directory</a>.';
+    return;
+  }
+
+  var u = await currentUser();
+  if (u) COMPANY = await currentCompany();
+  var canContact = !!(COMPANY && COMPANY.paid);
+
+  var r = await sb.from("profiles_public").select("*").eq("id", id).maybeSingle();
+  if (r.error || !r.data){
+    document.getElementById("loading").innerHTML =
+      'Profile not found. <a href="directory.html">Back to the directory</a>.';
+    return;
+  }
+  renderProfile(r.data, canContact);
+}
+
+function openBook(){
+  document.getElementById("bookTo").textContent =
+    "This request goes to " + (PERSON && PERSON.name ? PERSON.name : "the freelancer") + "'s CrewBoard inbox.";
+  document.getElementById("bookMsg").className = "muted";
+  document.getElementById("bookMsg").textContent = "";
+  document.getElementById("bookModal").classList.remove("hidden");
+}
+function closeBook(){ document.getElementById("bookModal").classList.add("hidden"); }
+
+document.getElementById("bookClose").onclick = closeBook;
+
+document.getElementById("bookForm").onsubmit = async function(e){
+  e.preventDefault();
+  if (!sb || !COMPANY || !PERSON) return;
+  var f = e.target;
+  var row = {
+    company_id: COMPANY.id,
+    freelancer_id: PERSON.id,
+    event_name: f.event_name.value,
+    event_date: f.event_date.value || null,
+    location: f.location.value,
+    offered_rate: parseInt(f.offered_rate.value, 10) || null,
+    message: f.message.value,
+    status: "pending"
+  };
+  document.getElementById("bookSend").disabled = true;
+  show("bookMsg", "Sending...", "wait");
+  var r = await sb.from("bookings").insert(row);
+  document.getElementById("bookSend").disabled = false;
+  if (r.error){ show("bookMsg", r.error.message, "err"); return; }
+  show("bookMsg", "Request sent. The freelancer will see it in their inbox.", "ok");
+  f.reset();
+};
+
+loadProfile();
+</script>
+</body>
+</html>
