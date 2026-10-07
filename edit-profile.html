@@ -22,13 +22,17 @@
 .photo-preview img{width:100%;height:100%;object-fit:cover;display:block}
 .photo-actions{min-width:0}
 .photo-actions .btn{padding:9px 16px;font-size:.9rem;box-shadow:none;margin-right:8px}
+.handbox{background:#f3f6fb;border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
+.handbox .url{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92rem;
+  background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px;
+  display:block;word-break:break-all;color:var(--navy2)}
 @media(max-width:520px){.photobox{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
 <header class="nav">
   <div class="nav-inner">
-    <a class="logo" href="index.html"><span class="mark">C</span>Crew<span>Board</span></a>
+    <a class="logo" href="index.html"><span class="mark">C</span><span class="wordmark">CrewBoard</span></a>
     <nav>
       <a href="index.html">Home</a>
       <a class="opt-link" href="directory.html">Directory</a>
@@ -93,6 +97,13 @@
       <button class="btn" type="submit" id="saveBtn">Save my profile</button>
       <p id="profileMsg" class="muted"></p>
     </form>
+
+    <div class="handbox" id="linkBox" style="display:none;margin-top:22px">
+      <p class="opt" style="margin:0 0 8px">Your profile link</p>
+      <span class="url" id="linkUrl"></span>
+      <p class="muted" style="margin:10px 0 0">Share this with producers so they can find you.</p>
+    </div>
+
     <p style="margin-top:18px"><a href="directory.html">See the public directory</a></p>
   </div>
 </section>
@@ -203,6 +214,7 @@ async function wireAuthSlot(){
 </script>
 <script>
 var USER = null;
+var EXISTING_USERNAME = null;
 var PHOTO_FILE = null;
 var PHOTO_URL = "";
 var PHOTO_CLEAR = false;
@@ -224,6 +236,13 @@ function initialsOf(name, fallback){
   var n = String(name || "").trim();
   if (!n) return fallback || "?";
   return n.split(" ").map(function(x){ return x[0]; }).join("").slice(0,2).toUpperCase();
+}
+
+function showLink(handle){
+  if (!handle){ return; }
+  document.getElementById("linkUrl").textContent =
+    "crewboard.fit/profile.html?u=" + handle;
+  document.getElementById("linkBox").style.display = "block";
 }
 
 function renderPhotoPreview(){
@@ -271,6 +290,29 @@ document.getElementById("profileForm").name.addEventListener("input", function()
   if (!PHOTO_URL && !PHOTO_FILE) renderPhotoPreview();
 });
 
+// ---------- Readable profile handle ----------
+// Built once from the freelancer's name, then kept forever so any link
+// they have already shared keeps working.
+function slugify(s){
+  return String(s || "")
+    .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+}
+
+async function makeUsername(fullName){
+  var base = slugify(fullName) || "crew";
+  var candidate = base;
+  for (var n = 2; n <= 30; n++){
+    var taken = await sb.from("profiles").select("id").ilike("username", candidate).maybeSingle();
+    if (!taken.data) return candidate;
+    candidate = base + "-" + n;
+  }
+  return base + "-" + Math.floor(Math.random() * 90000 + 10000);
+}
+
 async function uploadPhoto(){
   if (!PHOTO_FILE || !USER) return PHOTO_URL;
   var ext = (PHOTO_FILE.name.split(".").pop() || "jpg").toLowerCase();
@@ -315,6 +357,8 @@ async function boot(){
     f.union.checked = !!p.union_member;
     f.avail.checked = !!p.available_now;
     PHOTO_URL = p.avatar_url || "";
+    EXISTING_USERNAME = p.username || null;
+    showLink(EXISTING_USERNAME);
   }
   renderPhotoPreview();
 }
@@ -324,6 +368,22 @@ document.getElementById("profileForm").onsubmit = async function(e){
   if (!USER) return;
   var f = e.target;
   var primary = f.role.value === "__other__" ? (f.customRole.value || "Other").trim() : f.role.value;
+
+  document.getElementById("saveBtn").disabled = true;
+  show("profileMsg", "Saving...", "wait");
+
+  // Work out the handle once. It never changes after the first save.
+  var handle = EXISTING_USERNAME;
+  if (!handle){
+    try {
+      handle = await makeUsername(f.name.value);
+    } catch (e1){
+      document.getElementById("saveBtn").disabled = false;
+      show("profileMsg", "Could not create your profile link. Please try again.", "err");
+      return;
+    }
+  }
+
   var row = {
     id: USER.id,
     name: f.name.value,
@@ -339,11 +399,9 @@ document.getElementById("profileForm").onsubmit = async function(e){
     multi_role: f.multi.checked,
     available_now: f.avail.checked,
     email: USER.email,
-    avatar_url: PHOTO_CLEAR ? "" : (PHOTO_URL || "")
+    avatar_url: PHOTO_CLEAR ? "" : (PHOTO_URL || ""),
+    username: handle
   };
-
-  document.getElementById("saveBtn").disabled = true;
-  show("profileMsg", "Saving...", "wait");
 
   if (PHOTO_FILE){
     try {
@@ -361,6 +419,9 @@ document.getElementById("profileForm").onsubmit = async function(e){
   var r = await sb.from("profiles").upsert(row, { onConflict: "id" });
   document.getElementById("saveBtn").disabled = false;
   if (r.error){ show("profileMsg", r.error.message, "err"); return; }
+
+  EXISTING_USERNAME = handle;
+  showLink(handle);
   show("profileMsg", "Saved. Your profile is now in the public directory.", "ok");
   document.getElementById("pageTitle").textContent = "Edit your profile";
   PHOTO_CLEAR = false;
