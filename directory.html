@@ -17,7 +17,7 @@
 <body>
 <header class="nav">
   <div class="nav-inner">
-    <a class="logo" href="index.html"><span class="mark">C</span>Crew<span>Board</span></a>
+    <a class="logo" href="index.html"><span class="mark">C</span><span class="wordmark">CrewBoard</span></a>
     <nav>
       <a href="index.html">Home</a>
       <a class="opt-link" href="directory.html">Directory</a>
@@ -240,9 +240,12 @@ function renderRows(){
     var av = p.avatar_url
       ? '<img src="' + esc(p.avatar_url) + '" alt="">'
       : esc(initials);
+    var href = 'profile.html?' + (p.username
+      ? 'u=' + encodeURIComponent(p.username)
+      : 'id=' + encodeURIComponent(p.id));
     var c = '<div class="card">';
     c += '<div class="card-top"><div class="avatar">' + av + '</div>';
-    c += '<div><h3><a href="profile.html?id=' + encodeURIComponent(p.id) + '">' + esc(p.name) + '</a></h3><span class="muted">' + esc(p.city || "Location not set") + '</span></div>';
+    c += '<div><h3><a href="' + href + '">' + esc(p.name) + '</a></h3><span class="muted">' + esc(p.city || "Location not set") + '</span></div>';
     c += '<div class="rate">$' + esc(p.rate || 0) + '<small>/day</small></div></div>';
     c += '<div class="tags">' + rolesOf(p).map(function(r){ return '<span class="tag">' + esc(r) + '</span>'; }).join("");
     if (p.multi_role) c += '<span class="tag blue">Multi-role</span>';
@@ -253,7 +256,7 @@ function renderRows(){
     if (p.gear) c += '<p><b>Gear:</b> ' + esc(p.gear) + '</p>';
     if (p.credits) c += '<p><b>Credits:</b> ' + esc(p.credits) + '</p>';
     if (p.miles) c += '<p>Travels up to ' + esc(p.miles) + ' miles</p>';
-    c += '<a class="btn sec" href="profile.html?id=' + encodeURIComponent(p.id) + '">View full profile</a>';
+    c += '<a class="btn sec" href="' + href + '">View full profile</a>';
     if (canSend){
       c += '<button class="btn" style="margin-top:8px" onclick="openBook(\'' + p.id + '\',\'' + safeName + '\')">Request booking</button>';
     } else {
