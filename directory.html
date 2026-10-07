@@ -47,6 +47,35 @@
   <div id="results" class="grid"></div>
 </section>
 
+<div id="bookModal" class="modal hidden">
+  <div class="modal-box">
+    <button id="bookClose" class="x" aria-label="Close">&times;</button>
+    <h3 id="bookTitle">Send booking request</h3>
+    <p class="muted" id="bookTo"></p>
+    <form id="bookForm" class="form">
+      <label class="fld">Event name
+        <input name="event_name" placeholder="e.g. NBA game, festival" required>
+      </label>
+      <div class="two">
+        <label class="fld">Date
+          <input name="event_date" type="date" required>
+        </label>
+        <label class="fld">Venue / city
+          <input name="location" placeholder="e.g. Arena, Dallas" required>
+        </label>
+      </div>
+      <label class="fld">Offered day rate ($) <span class="opt">optional</span>
+        <input name="offered_rate" type="number" min="0" placeholder="e.g. 500">
+      </label>
+      <label class="fld">Message
+        <textarea name="message" rows="3" placeholder="Role needed, call times, anything else useful"></textarea>
+      </label>
+      <button class="btn" type="submit" id="bookSend">Send request</button>
+      <p id="bookMsg" class="muted"></p>
+    </form>
+  </div>
+</div>
+
 <footer>
   <div class="wrap">
     <div class="foot-grid">
