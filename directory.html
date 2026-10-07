@@ -237,9 +237,12 @@ function renderRows(){
   document.getElementById("results").innerHTML = list.map(function(p){
     var initials = String(p.name || "?").split(" ").map(function(x){ return x[0]; }).join("").slice(0,2);
     var safeName = String(p.name || "").replace(/'/g, "");
+    var av = p.avatar_url
+      ? '<img src="' + esc(p.avatar_url) + '" alt="">'
+      : esc(initials);
     var c = '<div class="card">';
-    c += '<div class="card-top"><div class="avatar">' + esc(initials) + '</div>';
-    c += '<div><h3><a href="profile.html?id=' + encodeURIComponent(p.id) + '" style="text-decoration:none">' + esc(p.name) + '</a></h3><span class="muted">' + esc(p.city || "Location not set") + '</span></div>';
+    c += '<div class="card-top"><div class="avatar">' + av + '</div>';
+    c += '<div><h3><a href="profile.html?id=' + encodeURIComponent(p.id) + '">' + esc(p.name) + '</a></h3><span class="muted">' + esc(p.city || "Location not set") + '</span></div>';
     c += '<div class="rate">$' + esc(p.rate || 0) + '<small>/day</small></div></div>';
     c += '<div class="tags">' + rolesOf(p).map(function(r){ return '<span class="tag">' + esc(r) + '</span>'; }).join("");
     if (p.multi_role) c += '<span class="tag blue">Multi-role</span>';
