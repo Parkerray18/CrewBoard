@@ -23,8 +23,9 @@ a{color:var(--blue)}
 .nav nav{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
 .nav a{color:#dbe4f0;text-decoration:none;font-size:.93rem;font-weight:500}
 .nav a:hover{color:#fff}
-.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:1.2rem;color:#fff;text-decoration:none}
-.logo span{color:var(--accent)}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:1.2rem;color:#fff;text-decoration:none;letter-spacing:-.01em}
+.logo span{color:#fff}
+.logo .wordmark{color:#fff}
 .logo .mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));
   display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:800}
 .hero{background:radial-gradient(1200px 500px at 12% -10%,#1d3f6e 0%,var(--navy) 55%),var(--navy);color:#fff}
