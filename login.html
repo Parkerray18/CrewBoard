@@ -17,7 +17,7 @@
 <body>
 <header class="nav">
   <div class="nav-inner">
-    <a class="logo" href="index.html"><span class="mark">C</span>Crew<span>Board</span></a>
+    <a class="logo" href="index.html"><span class="mark">C</span><span class="wordmark">CrewBoard</span></a>
     <nav>
       <a href="index.html">Home</a>
       <a class="opt-link" href="directory.html">Directory</a>
@@ -112,18 +112,12 @@ function show(id, text, kind){
 }
 
 var configured = window.SB_KEY && window.SB_KEY.indexOf("PASTE_") !== 0;
-var sb = null;
-if (configured && window.supabase){
+var sb = window.CB_SB || null;
+if (!sb && configured && window.supabase){
   sb = window.supabase.createClient(window.SB_URL, window.SB_KEY);
 }
 
 window.addEventListener("DOMContentLoaded", function(){
-  if (!configured){
-    var b = document.createElement("div");
-    b.className = "wrap";
-    b.innerHTML = '<div class="warn"><b>Almost ready:</b> the database connection is being set up. Please check back shortly.</div>';
-    document.body.insertBefore(b, document.body.children[1] || null);
-  }
   wireAuthSlot();
 });
 
