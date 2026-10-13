@@ -57,13 +57,16 @@
         <input name="event_name" placeholder="e.g. NBA game, festival" required>
       </label>
       <div class="two">
-        <label class="fld">Date
+        <label class="fld">Start date
           <input name="event_date" type="date" required>
         </label>
-        <label class="fld">Venue / city
-          <input name="location" placeholder="e.g. Arena, Dallas" required>
+        <label class="fld">End date <span class="opt">optional</span>
+          <input name="end_date" type="date">
         </label>
       </div>
+      <label class="fld">Venue / city
+        <input name="location" placeholder="e.g. Arena, Dallas" required>
+      </label>
       <label class="fld">Offered day rate ($) <span class="opt">optional</span>
         <input name="offered_rate" type="number" min="0" placeholder="e.g. 500">
       </label>
@@ -93,6 +96,7 @@
       <div>
         <h4>Companies</h4>
         <p><a href="company-signup.html">Register your company</a></p>
+        <p><a href="company-login.html">Company login</a></p>
         <p><a href="index.html#pricing">See pricing</a></p>
       </div>
     </div>
@@ -301,6 +305,7 @@ if (bookFormEl) bookFormEl.onsubmit = async function(e){
     freelancer_id: TARGET,
     event_name: f.event_name.value,
     event_date: f.event_date.value || null,
+    end_date: f.end_date.value || null,
     location: f.location.value,
     offered_rate: parseInt(f.offered_rate.value, 10) || null,
     message: f.message.value,
