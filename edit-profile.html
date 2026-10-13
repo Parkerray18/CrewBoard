@@ -60,7 +60,7 @@
           <input type="file" id="photoInput" accept="image/png,image/jpeg,image/webp" style="display:none">
           <button type="button" class="btn sec" id="photoPick">Choose a photo</button>
           <button type="button" class="btn danger" id="photoRemove" style="display:none">Remove</button>
-          <p class="opt" style="margin:8px 0 0">PNG, JPG or WebP. Up to 3 MB.</p>
+          <p class="opt" style="margin:8px 0 0">PNG, JPG or WebP. Any size — we'll optimise it.</p>
         </div>
       </div>
       <label class="fld">Full name
@@ -261,6 +261,46 @@ function renderPhotoPreview(){
     ((PHOTO_FILE || PHOTO_URL) && !PHOTO_CLEAR) ? "inline-flex" : "none";
 }
 
+// ---------- Photo resizing -------------------------------------------------
+// Shrink the picked photo on the user's own device before it is uploaded.
+// A phone or camera photo (often 4-12 MB) comes out around 150-400 KB and still
+// looks sharp at the size we show it. This also drops EXIF data, which includes
+// GPS location — worth knowing, since some photos are taken at home.
+function shrinkImage(file, maxDim, quality){
+  return new Promise(function(resolve, reject){
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function(){
+      try {
+        var w = img.naturalWidth, h = img.naturalHeight;
+        if (!w || !h){ throw new Error("That image has no readable size."); }
+        var scale = Math.min(1, maxDim / Math.max(w, h));
+        var cw = Math.max(1, Math.round(w * scale));
+        var ch = Math.max(1, Math.round(h * scale));
+        var canvas = document.createElement("canvas");
+        canvas.width = cw;
+        canvas.height = ch;
+        var c = canvas.getContext("2d");
+        c.drawImage(img, 0, 0, cw, ch);
+        canvas.toBlob(function(blob){
+          URL.revokeObjectURL(url);
+          if (!blob){ reject(new Error("Could not process that image.")); return; }
+          blob.name = "avatar.jpg";
+          resolve(blob);
+        }, "image/jpeg", quality);
+      } catch (e){
+        URL.revokeObjectURL(url);
+        reject(e);
+      }
+    };
+    img.onerror = function(){
+      URL.revokeObjectURL(url);
+      reject(new Error("That file could not be read as an image."));
+    };
+    img.src = url;
+  });
+}
+
 document.getElementById("photoPick").onclick = function(){
   document.getElementById("photoInput").click();
 };
@@ -272,20 +312,26 @@ document.getElementById("nudgePick").onclick = function(){
 document.getElementById("photoInput").onchange = function(){
   var f = this.files && this.files[0];
   if (!f) return;
-  if (f.size > 3 * 1024 * 1024){
-    show("profileMsg", "That picture is over 3 MB. Please choose a smaller one.", "err");
+  if (f.size > 25 * 1024 * 1024){
+    show("profileMsg", "That picture is over 25 MB. Please choose a smaller one.", "err");
     this.value = "";
     return;
   }
-  PHOTO_FILE = f;
-  PHOTO_CLEAR = false;
-  var reader = new FileReader();
-  reader.onload = function(ev){
-    document.getElementById("photoPreview").innerHTML = '<img src="' + ev.target.result + '" alt="">';
-    document.getElementById("photoRemove").style.display = "inline-flex";
-    document.getElementById("photoNudge").style.display = "none";
-  };
-  reader.readAsDataURL(f);
+  show("profileMsg", "Preparing your photo...", "wait");
+  shrinkImage(f, 800, 0.85).then(function(small){
+    PHOTO_FILE = small;
+    PHOTO_CLEAR = false;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      document.getElementById("photoPreview").innerHTML = '<img src="' + ev.target.result + '" alt="">';
+      document.getElementById("photoRemove").style.display = "inline-flex";
+      document.getElementById("photoNudge").style.display = "none";
+      show("profileMsg", "Photo ready. Remember to save your profile.", "ok");
+    };
+    reader.readAsDataURL(small);
+  }).catch(function(err){
+    show("profileMsg", err.message || "Could not read that image. Please try another.", "err");
+  });
 };
 
 document.getElementById("photoRemove").onclick = function(){
