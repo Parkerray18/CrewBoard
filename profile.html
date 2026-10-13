@@ -178,8 +178,12 @@ window.addEventListener("DOMContentLoaded", function(){
 
 async function currentUser(){
   if (!sb) return null;
-  var r = await sb.auth.getUser();
-  return r.data ? r.data.user : null;
+  try {
+    var r = await sb.auth.getUser();
+    return r.data ? r.data.user : null;
+  } catch (e) {
+    return null;
+  }
 }
 
 async function wireAuthSlot(){
@@ -201,10 +205,14 @@ async function wireAuthSlot(){
 
 async function currentCompany(){
   if (!sb) return null;
-  var u = await currentUser();
-  if (!u) return null;
-  var r = await sb.from("companies").select("*").eq("id", u.id).maybeSingle();
-  return r.data || null;
+  try {
+    var u = await currentUser();
+    if (!u) return null;
+    var r = await sb.from("companies").select("*").eq("id", u.id).maybeSingle();
+    return r.data || null;
+  } catch (e) {
+    return null;
+  }
 }
 
 async function isPayingCompany(){
@@ -235,104 +243,134 @@ function line(label, value){
 }
 
 function renderProfile(p, canContact){
-  PERSON = p;
-  var initials = String(p.name || "?").split(" ").map(function(x){ return x[0]; }).join("").slice(0,2);
-  var roles = rolesOf(p);
-  var av = p.avatar_url
-    ? '<img src="' + esc(p.avatar_url) + '" alt="">'
-    : esc(initials);
+  try {
+    PERSON = p;
+    var initials = String(p.name || "?").split(" ").map(function(x){ return x[0]; }).join("").slice(0,2);
+    var roles = rolesOf(p);
+    var av = p.avatar_url
+      ? '<img src="' + esc(p.avatar_url) + '" alt="">'
+      : esc(initials);
 
-  var h = '<a class="backlink" href="directory.html">&larr; Back to the directory</a>';
+    var h = '<a class="backlink" href="directory.html">&larr; Back to the directory</a>';
 
-  h += '<div class="prof-head">';
-  h += '<div class="prof-avatar">' + av + '</div>';
-  h += '<div><h1 class="prof-name">' + esc(p.name) + '</h1>';
-  h += '<p class="prof-meta">' + esc(p.city || "Location not set") + '</p>';
-  if (p.username){
-    h += '<span class="prof-share">crewboard.fit/profile.html?u=' + esc(p.username) + '</span>';
-  }
-  h += '<div class="tags" style="margin-top:12px">' +
-       roles.map(function(r){ return '<span class="tag">' + esc(r) + '</span>'; }).join("");
-  if (p.multi_role) h += '<span class="tag blue">Multi-role</span>';
-  if (p.union_member) h += '<span class="tag orange">Union</span>';
-  if (p.available_now) h += '<span class="tag green">Available now</span>';
-  h += '</div></div>';
-  h += '<div class="prof-rate"><span class="n">$' + esc(p.rate || 0) + '</span><small>per day</small></div>';
-  h += '</div>';
-
-  h += '<div class="panel"><h3>Details</h3><dl class="kv">';
-  h += line("Primary role", p.role);
-  if ((p.roles || []).length) h += line("Also works as", (p.roles || []).join(", "));
-  if (p.skills) h += line("Skills", p.skills);
-  if (p.miles) h += line("Travel radius", p.miles + " miles");
-  h += line("Availability", p.available_now ? "Available now" : "Ask for dates");
-  h += line("Union", p.union_member ? "Union member" : "Non-union");
-  h += line("Member since", fmtDate((p.created_at || "").slice(0,10)));
-  h += '</dl></div>';
-
-  if (p.gear){
-    h += '<div class="panel"><h3>Gear and equipment</h3><p class="muted" style="margin:0">' + esc(p.gear) + '</p></div>';
-  }
-  if (p.credits){
-    var items = String(p.credits).split(",").map(function(s){ return s.trim(); }).filter(Boolean);
-    h += '<div class="panel"><h3>Credits</h3><ul class="credit-list">' +
-         items.map(function(c){ return '<li>' + esc(c) + '</li>'; }).join("") + '</ul></div>';
-  }
-
-  if (canContact){
-    h += '<div class="unlocked">';
-    h += '<h3>Your plan is active</h3>';
-    h += '<p>Send a booking request and ' + esc((p.name || "this freelancer").split(" ")[0]) +
-         ' gets it straight in their CrewBoard inbox.</p>';
-    h += '<button class="btn" id="reqBtn">Send booking request</button>';
+    h += '<div class="prof-head">';
+    h += '<div class="prof-avatar">' + av + '</div>';
+    h += '<div><h1 class="prof-name">' + esc(p.name) + '</h1>';
+    h += '<p class="prof-meta">' + esc(p.city || "Location not set") + '</p>';
+    if (p.username){
+      h += '<span class="prof-share">crewboard.fit/profile.html?u=' + esc(p.username) + '</span>';
+    }
+    h += '<div class="tags" style="margin-top:12px">' +
+         roles.map(function(r){ return '<span class="tag">' + esc(r) + '</span>'; }).join("");
+    if (p.multi_role) h += '<span class="tag blue">Multi-role</span>';
+    if (p.union_member) h += '<span class="tag orange">Union</span>';
+    if (p.available_now) h += '<span class="tag green">Available now</span>';
+    h += '</div></div>';
+    h += '<div class="prof-rate"><span class="n">$' + esc(p.rate || 0) + '</span><small>per day</small></div>';
     h += '</div>';
-  } else {
-    h += '<div class="locked">';
-    h += '<h3>Contact details are for paying companies</h3>';
-    h += '<p>This profile is free to view. Sending a booking request needs a company account on an active plan &mdash; ' +
-         '$74.99 a month, or $720 a year. Freelancers never get charged, and their contact details stay private until a company is subscribed.</p>';
-    h += '<a class="btn" href="company-signup.html">Register your company</a> ';
-    h += '<a class="btn sec" href="company-login.html">Company log in</a>';
-    h += '</div>';
+
+    h += '<div class="panel"><h3>Details</h3><dl class="kv">';
+    h += line("Primary role", p.role);
+    if ((p.roles || []).length) h += line("Also works as", (p.roles || []).join(", "));
+    if (p.skills) h += line("Skills", p.skills);
+    if (p.miles) h += line("Travel radius", p.miles + " miles");
+    h += line("Availability", p.available_now ? "Available now" : "Ask for dates");
+    h += line("Union", p.union_member ? "Union member" : "Non-union");
+    h += line("Member since", fmtDate((p.created_at || "").slice(0,10)));
+    h += '</dl></div>';
+
+    if (p.gear){
+      h += '<div class="panel"><h3>Gear and equipment</h3><p class="muted" style="margin:0">' + esc(p.gear) + '</p></div>';
+    }
+    if (p.credits){
+      var items = String(p.credits).split(",").map(function(s){ return s.trim(); }).filter(Boolean);
+      h += '<div class="panel"><h3>Credits</h3><ul class="credit-list">' +
+           items.map(function(c){ return '<li>' + esc(c) + '</li>'; }).join("") + '</ul></div>';
+    }
+
+    if (canContact){
+      h += '<div class="unlocked">';
+      h += '<h3>Your plan is active</h3>';
+      h += '<p>Send a booking request and ' + esc((p.name || "this freelancer").split(" ")[0]) +
+           ' gets it straight in their CrewBoard inbox.</p>';
+      h += '<button class="btn" id="reqBtn">Send booking request</button>';
+      h += '</div>';
+    } else {
+      h += '<div class="locked">';
+      h += '<h3>Contact details are for paying companies</h3>';
+      h += '<p>This profile is free to view. Sending a booking request needs a company account on an active plan &mdash; ' +
+           '$74.99 a month, or $720 a year. Freelancers never get charged, and their contact details stay private until a company is subscribed.</p>';
+      h += '<a class="btn" href="company-signup.html">Register your company</a> ';
+      h += '<a class="btn sec" href="company-login.html">Company log in</a>';
+      h += '</div>';
+    }
+
+    document.getElementById("content").innerHTML = h;
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("content").style.display = "block";
+    document.title = (p.name || "Freelancer") + " | CrewBoard";
+
+    var btn = document.getElementById("reqBtn");
+    if (btn) btn.onclick = openBook;
+  } catch (err) {
+    console.error("renderProfile error:", err);
+    document.getElementById("loading").innerHTML =
+      'Could not display profile. <a href="directory.html">Back to the directory</a>.';
   }
-
-  document.getElementById("content").innerHTML = h;
-  document.getElementById("loading").style.display = "none";
-  document.getElementById("content").style.display = "block";
-  document.title = (p.name || "Freelancer") + " | CrewBoard";
-
-  var btn = document.getElementById("reqBtn");
-  if (btn) btn.onclick = openBook;
 }
 
-async function loadProfile(){\n  var id = getParam("id");
-  var handle = getParam("u");
-  if (!sb){\n    document.getElementById("loading").textContent = "Profiles are being set up. Please check back shortly.";
-    return;
-  }
-  if (!id && !handle){\n    document.getElementById("loading").innerHTML =
-      'No profile selected. <a href="directory.html">Back to the directory</a>.';
-    return;
-  }
+async function loadProfile(){
+  try {
+    var id = getParam("id");
+    var handle = getParam("u");
+    if (!sb){
+      document.getElementById("loading").textContent = "Profiles are being set up. Please check back shortly.";
+      return;
+    }
+    if (!id && !handle){
+      document.getElementById("loading").innerHTML =
+        'No profile selected. <a href="directory.html">Back to the directory</a>.';
+      return;
+    }
 
-  var u = await currentUser();
-  if (u) COMPANY = await currentCompany();
-  var canContact = !!(COMPANY && COMPANY.paid);
+    var canContact = false;
+    try {
+      var u = await currentUser();
+      if (u) COMPANY = await currentCompany();
+      canContact = !!(COMPANY && COMPANY.paid);
+    } catch (eAuth) {
+      console.warn("Auth check failed:", eAuth);
+    }
 
-  // Prefer the readable link (?u=marcus-reed); the uuid still works as a fallback.
-  var r = null;
-  if (handle){\n    r = await sb.from("profiles_public").select("*").ilike("username", handle).maybeSingle();
+    // Prefer readable link (?u=marcus-reed), fallback to profiles_public or profiles table
+    var r = null;
+    if (handle){
+      r = await sb.from("profiles_public").select("*").ilike("username", handle).maybeSingle();
+      if (r.error || !r.data){
+        r = await sb.from("profiles").select("*").ilike("username", handle).maybeSingle();
+      }
+    }
+    if ((!r || !r.data || r.error) && id){
+      r = await sb.from("profiles_public").select("*").eq("id", id).maybeSingle();
+      if (r.error || !r.data){
+        r = await sb.from("profiles").select("*").eq("id", id).maybeSingle();
+      }
+    }
+    if (!r || !r.data){
+      document.getElementById("loading").innerHTML =
+        'Profile not found. <a href="directory.html">Back to the directory</a>.';
+      return;
+    }
+    renderProfile(r.data, canContact);
+  } catch (err) {
+    console.error("loadProfile fatal error:", err);
+    document.getElementById("loading").innerHTML =
+      'Could not load profile. <a href="directory.html">Back to the directory</a>.';
   }
-  if ((!r || !r.data || r.error) && id){\n    r = await sb.from("profiles_public").select("*").eq("id", id).maybeSingle();
-  }
-  if (r.error || !r.data){\n    document.getElementById("loading").innerHTML =
-      'Profile not found. <a href="directory.html">Back to the directory</a>.';
-    return;
-  }
-  renderProfile(r.data, canContact);
 }
 
-function openBook(){\n  document.getElementById("bookTo").textContent =
+function openBook(){
+  document.getElementById("bookTo").textContent =
     "This request goes to " + (PERSON && PERSON.name ? PERSON.name : "the freelancer") + "'s CrewBoard inbox.";
   document.getElementById("bookMsg").className = "muted";
   document.getElementById("bookMsg").textContent = "";
@@ -342,7 +380,8 @@ function closeBook(){ document.getElementById("bookModal").classList.add("hidden
 
 document.getElementById("bookClose").onclick = closeBook;
 
-document.getElementById("bookForm").onsubmit = async function(e){\n  e.preventDefault();
+document.getElementById("bookForm").onsubmit = async function(e){
+  e.preventDefault();
   if (!sb || !COMPANY || !PERSON) return;
   var f = e.target;
   var row = {
