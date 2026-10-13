@@ -145,6 +145,12 @@ function fmtDate(d){
   } catch (e) { return d; }
 }
 
+function fmtRange(start, end){
+  if (!start && !end) return "date not set";
+  if (!end || start === end) return fmtDate(start);
+  return fmtDate(start) + " – " + fmtDate(end);
+}
+
 async function loadRequests(){
   if (!sb){
     document.getElementById("reqLead").textContent =
@@ -185,8 +191,8 @@ async function loadRequests(){
     c += '<span class="muted">from ' + esc(who) + '</span></div>';
     if (b.offered_rate) c += '<div class="rate">$' + esc(b.offered_rate) + '<small>/day offered</small></div>';
     c += '</div>';
-    c += '<div class="tags"><span class="tag ' + statusClass + '">' + esc(b.status || "pending") + '</span>';
-    c += '<span class="tag">' + esc(fmtDate(b.event_date)) + '</span></div>';
+    c += '<div class="tags"><span class="tag ' + statusClass + '\">' + esc(b.status || "pending") + '</span>';
+    c += '<span class="tag">' + esc(fmtRange(b.event_date, b.end_date)) + '</span></div>';
     if (b.location) c += '<p><b>Where:</b> ' + esc(b.location) + '</p>';
     if (b.message) c += '<p><b>Message:</b> ' + esc(b.message) + '</p>';
     if (b.status === "pending"){
