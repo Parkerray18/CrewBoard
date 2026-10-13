@@ -79,13 +79,16 @@
         <input name="event_name" placeholder="e.g. NBA game, festival" required>
       </label>
       <div class="two">
-        <label class="fld">Date
+        <label class="fld">Start date
           <input name="event_date" type="date" required>
         </label>
-        <label class="fld">Venue / city
-          <input name="location" placeholder="e.g. Arena, Dallas" required>
+        <label class="fld">End date <span class="opt">optional</span>
+          <input name="end_date" type="date">
         </label>
       </div>
+      <label class="fld">Venue / city
+        <input name="location" placeholder="e.g. Arena, Dallas" required>
+      </label>
       <label class="fld">Offered day rate ($) <span class="opt">optional</span>
         <input name="offered_rate" type="number" min="0" placeholder="e.g. 500">
       </label>
@@ -302,15 +305,12 @@ function renderProfile(p, canContact){
   if (btn) btn.onclick = openBook;
 }
 
-async function loadProfile(){
-  var id = getParam("id");
+async function loadProfile(){\n  var id = getParam("id");
   var handle = getParam("u");
-  if (!sb){
-    document.getElementById("loading").textContent = "Profiles are being set up. Please check back shortly.";
+  if (!sb){\n    document.getElementById("loading").textContent = "Profiles are being set up. Please check back shortly.";
     return;
   }
-  if (!id && !handle){
-    document.getElementById("loading").innerHTML =
+  if (!id && !handle){\n    document.getElementById("loading").innerHTML =
       'No profile selected. <a href="directory.html">Back to the directory</a>.';
     return;
   }
@@ -321,22 +321,18 @@ async function loadProfile(){
 
   // Prefer the readable link (?u=marcus-reed); the uuid still works as a fallback.
   var r = null;
-  if (handle){
-    r = await sb.from("profiles_public").select("*").ilike("username", handle).maybeSingle();
+  if (handle){\n    r = await sb.from("profiles_public").select("*").ilike("username", handle).maybeSingle();
   }
-  if ((!r || !r.data || r.error) && id){
-    r = await sb.from("profiles_public").select("*").eq("id", id).maybeSingle();
+  if ((!r || !r.data || r.error) && id){\n    r = await sb.from("profiles_public").select("*").eq("id", id).maybeSingle();
   }
-  if (r.error || !r.data){
-    document.getElementById("loading").innerHTML =
+  if (r.error || !r.data){\n    document.getElementById("loading").innerHTML =
       'Profile not found. <a href="directory.html">Back to the directory</a>.';
     return;
   }
   renderProfile(r.data, canContact);
 }
 
-function openBook(){
-  document.getElementById("bookTo").textContent =
+function openBook(){\n  document.getElementById("bookTo").textContent =
     "This request goes to " + (PERSON && PERSON.name ? PERSON.name : "the freelancer") + "'s CrewBoard inbox.";
   document.getElementById("bookMsg").className = "muted";
   document.getElementById("bookMsg").textContent = "";
@@ -346,8 +342,7 @@ function closeBook(){ document.getElementById("bookModal").classList.add("hidden
 
 document.getElementById("bookClose").onclick = closeBook;
 
-document.getElementById("bookForm").onsubmit = async function(e){
-  e.preventDefault();
+document.getElementById("bookForm").onsubmit = async function(e){\n  e.preventDefault();
   if (!sb || !COMPANY || !PERSON) return;
   var f = e.target;
   var row = {
@@ -355,6 +350,7 @@ document.getElementById("bookForm").onsubmit = async function(e){
     freelancer_id: PERSON.id,
     event_name: f.event_name.value,
     event_date: f.event_date.value || null,
+    end_date: f.end_date.value || null,
     location: f.location.value,
     offered_rate: parseInt(f.offered_rate.value, 10) || null,
     message: f.message.value,
