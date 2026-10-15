@@ -20,6 +20,9 @@
 .plan .alt p{margin:0 0 4px}
 .plan .save{display:inline-block;background:var(--greenbg);color:var(--green);font-size:.75rem;
   font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border-radius:99px;margin-top:8px}
+.plan-cta{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.plan-cta .btn{width:100%;margin:0}
+@media(max-width:520px){.plan-cta .btn{font-size:.95rem;padding:12px 16px}}
 </style>
 </head>
 <body>
@@ -95,7 +98,11 @@
         <li>Saved freelancer lists and one-click rebook</li>
         <li>7-day free trial</li>
       </ul>
-      <a class="btn" href="company.html">Request early access</a>
+      <!-- Stripe payment links. Placeholders until the real links exist. -->
+      <div class="plan-cta">
+        <a class="btn" href="#" data-stripe="monthly">Subscribe monthly &mdash; $74.99</a>
+        <a class="btn sec" href="#" data-stripe="annual">Subscribe annually &mdash; $720</a>
+      </div>
     </div>
   </div>
 </section>
