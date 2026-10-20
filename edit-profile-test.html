@@ -81,6 +81,8 @@
           <button type="button" class="btn danger" id="photoRemove" style="display:none">Remove</button>
           <p class="opt" style="margin:8px 0 0">PNG, JPG or WebP. Up to 3 MB.</p>
         </div>
+      </div>
+
       <div class="resumebox">
         <div class="resume-actions">
           <p class="opt" style="margin:0 0 8px">Resume <span class="opt">optional</span></p>
@@ -462,9 +464,8 @@ document.getElementById("resumeInput").onchange = function(){
   if (!f) return;
 
   var nameOk = /\.pdf$/i.test(f.name || "");
-  var typeOk = (f.type === "application/pdf" || f.type === "");
-  if (!nameOk || !typeOk){
-    show("profileMsg", "Please choose a PDF file.", "err");
+  if (!nameOk){
+    show("profileMsg", "Please choose a PDF file (filename must end in .pdf).", "err");
     this.value = "";
     return;
   }
