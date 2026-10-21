@@ -411,6 +411,20 @@ async function loadProfile(){
         'Profile not found. <a href="directory.html">Back to the directory</a>.';
       return;
     }
+
+    // profiles_public is a view with a fixed column list and has no resume_path,
+    // and it answers successfully - so the table fallback above never runs.
+    // Fetch the resume path separately, and only for a paying company, so the
+    // path is never requested on behalf of anyone else.
+    if (canContact && !r.data.resume_path){
+      try {
+        var rp = await sb.from("profiles").select("resume_path").eq("id", r.data.id).maybeSingle();
+        if (rp && rp.data) r.data.resume_path = rp.data.resume_path;
+      } catch (eResume) {
+        console.warn("Resume lookup failed:", eResume);
+      }
+    }
+
     renderProfile(r.data, canContact);
   } catch (err) {
     console.error("loadProfile fatal error:", err);
