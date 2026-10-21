@@ -31,6 +31,23 @@
 .nudge p:first-child{margin-bottom:4px;font-size:1rem}
 .nudge .btn{margin-top:12px;box-shadow:none}
 @media(max-width:520px){.photobox{flex-direction:column;align-items:flex-start}}
+
+.resumebox{display:flex;gap:18px;align-items:flex-start;background:#f3f6fb;border:1px solid var(--line);
+  border-radius:var(--radius);padding:18px;margin:14px 0 6px}
+.resume-actions{min-width:0;flex:1 1 auto}
+.resume-actions .btn{padding:9px 16px;font-size:.9rem;box-shadow:none;margin-right:8px}
+.resume-actions .opt{display:block;margin:8px 0 0}
+.resume-file{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);
+  border-radius:9px;padding:11px 13px;margin:0 0 10px}
+.resume-file .pdf{flex:0 0 auto;width:34px;height:34px;border-radius:7px;background:#ffe8df;color:#c2410c;
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.7rem;letter-spacing:.03em}
+.resume-file .meta{min-width:0}
+.resume-file .meta b{display:block;font-size:.94rem;word-break:break-all;line-height:1.25}
+.resume-file .meta small{color:var(--muted);font-size:.84rem}
+.resume-hint{background:#f3f6fb;border:1px dashed #c8d6e8;border-radius:var(--radius);
+  padding:16px 18px;margin:0 0 10px}
+.resume-hint p{margin:0;color:var(--muted);font-size:.92rem}
+@media(max-width:520px){.resumebox{flex-direction:column;gap:12px}}
 </style>
 </head>
 <body>
@@ -63,6 +80,28 @@
           <p class="opt" style="margin:8px 0 0">PNG, JPG or WebP. Any size — we'll optimise it.</p>
         </div>
       </div>
+
+      <div class="resumebox">
+        <div class="resume-actions">
+          <p class="opt" style="margin:0 0 8px">Resume <span class="opt">optional</span></p>
+
+          <div class="resume-hint" id="resumeHint">
+            <p>Add a PDF of your work history and references. Paying companies can open it from your profile &mdash; it is not public.</p>
+          </div>
+
+          <div class="resume-file" id="resumeFileBox" style="display:none">
+            <span class="pdf">PDF</span>
+            <span class="meta"><b id="resumeFileName">&nbsp;</b><small id="resumeFileState"></small></span>
+          </div>
+
+          <input type="file" id="resumeInput" accept="application/pdf,.pdf" style="display:none">
+          <button type="button" class="btn sec" id="resumePick">Upload a resume (PDF)</button>
+          <button type="button" class="btn" id="resumeView" style="display:none">View my resume</button>
+          <button type="button" class="btn danger" id="resumeRemove" style="display:none">Remove</button>
+          <p class="opt">PDF only, up to 5 MB.</p>
+        </div>
+      </div>
+
       <label class="fld">Full name
         <input name="name" placeholder="First and last name" required>
       </label>
@@ -106,6 +145,12 @@
       <p><b>Add a profile picture</b></p>
       <p>Freelancers with a photo get noticed first. Producers are hiring a person, not a name.</p>
       <button type="button" class="btn" id="nudgePick">Add my photo</button>
+    </div>
+
+    <div class="nudge" id="resumeNudge" style="display:none">
+      <p><b>Add your resume</b></p>
+      <p>A PDF with your work history and references gives companies the detail a profile field cannot. Only paying companies can open it.</p>
+      <button type="button" class="btn" id="nudgeResumePick">Upload my resume</button>
     </div>
 
     <div class="handbox" id="linkBox" style="display:none;margin-top:22px">
@@ -222,6 +267,9 @@ var EXISTING_USERNAME = null;
 var PHOTO_FILE = null;
 var PHOTO_URL = "";
 var PHOTO_CLEAR = false;
+var RESUME_FILE = null;
+var RESUME_PATH = "";
+var RESUME_CLEAR = false;
 
 function fillRolesDropdown(){
   document.getElementById("profileRole").innerHTML =
@@ -381,6 +429,106 @@ async function uploadPhoto(){
   return pub.data ? pub.data.publicUrl : "";
 }
 
+// ---------- Resume (PDF) ---------------------------------------------------
+// Deliberately NOT like the photo:
+//   * the bucket is private, so there is no public URL to store - we keep the path
+//   * the file is uploaded exactly as it is, never re-encoded
+//   * the filename is fixed, so re-uploading replaces the old one
+var RESUME_MAX = 5 * 1024 * 1024;   // 5 MB - must match the bucket limit
+
+function resumeFileNameFromPath(p){
+  if (!p) return "resume.pdf";
+  var parts = String(p).split("/");
+  return parts[parts.length - 1] || "resume.pdf";
+}
+
+function renderResume(){
+  var hint    = document.getElementById("resumeHint");
+  var fileBox = document.getElementById("resumeFileBox");
+  var viewBtn = document.getElementById("resumeView");
+  var remBtn  = document.getElementById("resumeRemove");
+  var pickBtn = document.getElementById("resumePick");
+  if (!hint) return;
+
+  var has = !!RESUME_FILE || (!!RESUME_PATH && !RESUME_CLEAR);
+
+  if (has){
+    hint.style.display = "none";
+    fileBox.style.display = "flex";
+    document.getElementById("resumeFileName").textContent =
+      RESUME_FILE ? RESUME_FILE.name : resumeFileNameFromPath(RESUME_PATH);
+    document.getElementById("resumeFileState").textContent =
+      RESUME_FILE ? "Ready to upload when you save" : "Saved on your profile";
+    viewBtn.style.display = (!RESUME_FILE && RESUME_PATH && !RESUME_CLEAR) ? "inline-flex" : "none";
+    remBtn.style.display = "inline-flex";
+    pickBtn.textContent = "Replace resume";
+  } else {
+    hint.style.display = "block";
+    fileBox.style.display = "none";
+    viewBtn.style.display = "none";
+    remBtn.style.display = "none";
+    pickBtn.textContent = "Upload a resume (PDF)";
+  }
+}
+
+// A short-lived link to the private file. Only ever works for the owner or
+// a paying company - the storage rule decides, not this code.
+async function openResume(){
+  if (!sb || !RESUME_PATH) return;
+  try {
+    var s = await sb.storage.from("resumes").createSignedUrl(RESUME_PATH, 60);
+    if (s.error || !s.data) throw new Error((s.error && s.error.message) || "Could not open that file.");
+    window.open(s.data.signedUrl, "_blank", "noopener");
+  } catch (err){
+    show("profileMsg", err.message, "err");
+  }
+}
+
+document.getElementById("resumePick").onclick = function(){
+  document.getElementById("resumeInput").click();
+};
+document.getElementById("nudgeResumePick").onclick = function(){
+  document.getElementById("resumeInput").click();
+};
+document.getElementById("resumeView").onclick = openResume;
+
+document.getElementById("resumeRemove").onclick = function(){
+  RESUME_FILE = null;
+  RESUME_CLEAR = true;
+  renderResume();
+  show("profileMsg", "Your resume will be removed when you save.", "wait");
+};
+
+document.getElementById("resumeInput").onchange = function(){
+  var f = this.files && this.files[0];
+  if (!f) return;
+
+  if (!/\.pdf$/i.test(f.name || "")){
+    show("profileMsg", "Please choose a PDF file (filename must end in .pdf).", "err");
+    this.value = "";
+    return;
+  }
+  if (f.size > RESUME_MAX){
+    show("profileMsg", "That PDF is over 5 MB. Please upload a smaller one.", "err");
+    this.value = "";
+    return;
+  }
+
+  RESUME_FILE = f;
+  RESUME_CLEAR = false;
+  renderResume();
+  show("profileMsg", "Resume ready. Press Save my profile to upload it.", "ok");
+};
+
+async function uploadResume(){
+  var path = USER.id + "/resume.pdf";
+  var up = await sb.storage.from("resumes").upload(path, RESUME_FILE, {
+    cacheControl: "3600", upsert: true, contentType: "application/pdf"
+  });
+  if (up.error) throw new Error("Resume upload failed: " + up.error.message);
+  return path;
+}
+
 async function boot(){
   if (!sb){
     show("profileMsg", "Profile saving is being set up. Please check back shortly.", "err");
@@ -415,8 +563,11 @@ async function boot(){
     EXISTING_USERNAME = p.username || null;
     showLink(EXISTING_USERNAME);
     if (!PHOTO_URL) document.getElementById("photoNudge").style.display = "block";
+    RESUME_PATH = p.resume_path || "";
+    if (!RESUME_PATH) document.getElementById("resumeNudge").style.display = "block";
   }
   renderPhotoPreview();
+  renderResume();
 }
 
 document.getElementById("profileForm").onsubmit = async function(e){
@@ -456,6 +607,7 @@ document.getElementById("profileForm").onsubmit = async function(e){
     available_now: f.avail.checked,
     email: USER.email,
     avatar_url: PHOTO_CLEAR ? "" : (PHOTO_URL || ""),
+    resume_path: RESUME_CLEAR ? null : (RESUME_PATH || null),
     username: handle
   };
 
@@ -464,6 +616,32 @@ document.getElementById("profileForm").onsubmit = async function(e){
       show("profileMsg", "Uploading your photo...", "wait");
       var newUrl = await uploadPhoto();
       if (newUrl){ row.avatar_url = newUrl; PHOTO_URL = newUrl; PHOTO_FILE = null; }
+    } catch (err){
+      document.getElementById("saveBtn").disabled = false;
+      show("profileMsg", err.message, "err");
+      return;
+    }
+  }
+
+  // If they removed their resume, delete the file too - otherwise the old PDF
+  // would stay in the bucket and still be openable by a paying company.
+  if (RESUME_CLEAR && RESUME_PATH){
+    try {
+      var del = await sb.storage.from("resumes").remove([RESUME_PATH]);
+      if (del.error) throw new Error("Could not remove your resume: " + del.error.message);
+      RESUME_PATH = "";
+    } catch (err){
+      document.getElementById("saveBtn").disabled = false;
+      show("profileMsg", err.message, "err");
+      return;
+    }
+  }
+
+  if (RESUME_FILE){
+    try {
+      show("profileMsg", "Uploading your resume...", "wait");
+      var newPath = await uploadResume();
+      if (newPath){ row.resume_path = newPath; RESUME_PATH = newPath; RESUME_FILE = null; }
     } catch (err){
       document.getElementById("saveBtn").disabled = false;
       show("profileMsg", err.message, "err");
@@ -482,7 +660,10 @@ document.getElementById("profileForm").onsubmit = async function(e){
   document.getElementById("pageTitle").textContent = "Edit your profile";
   PHOTO_CLEAR = false;
   if (PHOTO_URL){ document.getElementById("photoNudge").style.display = "none"; }
+  RESUME_CLEAR = false;
+  if (RESUME_PATH){ document.getElementById("resumeNudge").style.display = "none"; }
   renderPhotoPreview();
+  renderResume();
 };
 
 fillRolesDropdown();
