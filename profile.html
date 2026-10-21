@@ -11,7 +11,6 @@
 <meta property="og:url" content="https://crewboard.fit/profile.html">
 <meta property="og:type" content="profile">
 <meta name="theme-color" content="#0a1a2f">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff6b2c'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 <style>
 .prof-head{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;margin-bottom:6px}
@@ -48,6 +47,20 @@
   .credit-list{columns:1}
   .prof-rate{margin-left:0;text-align:left;width:100%}
 }
+
+.resume-panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px 26px;box-shadow:var(--shadow);margin-top:16px}
+.resume-panel h3{margin:0 0 6px;font-size:1.1rem}
+.resume-panel .sub{color:var(--muted);font-size:.92rem;margin:0 0 14px}
+.resume-file{display:flex;align-items:center;gap:12px;background:#f3f6fb;border:1px solid var(--line);
+  border-radius:9px;padding:12px 14px;margin:0 0 14px}
+.resume-file .pdf{flex:0 0 auto;width:38px;height:38px;border-radius:8px;background:#ffe8df;
+  color:#c2410c;display:flex;align-items:center;justify-content:center;font-weight:800;
+  font-size:.72rem;letter-spacing:.03em}
+.resume-file .meta{min-width:0}
+.resume-file .meta b{display:block;font-size:.96rem;line-height:1.25}
+.resume-file .meta small{color:var(--muted);font-size:.85rem}
+.resume-note{color:var(--muted);font-size:.85rem;margin:12px 0 0}
 </style>
 </head>
 <body>
@@ -269,6 +282,21 @@ function renderProfile(p, canContact){
     h += '<div class="prof-rate"><span class="n">$' + esc(p.rate || 0) + '</span><small>per day</small></div>';
     h += '</div>';
 
+    // Resume - only a paying company sees this, and only when the freelancer
+    // has actually uploaded one. Everyone else gets no card and no file path.
+    if (canContact && p.resume_path){
+      var rname = String(p.resume_path).split("/").pop() || "resume.pdf";
+      var first = (p.name || "this freelancer").split(" ")[0];
+      h += '<div class="resume-panel resume-card">';
+      h += '<h3>Resume</h3>';
+      h += '<p class="sub">Work history and references, as supplied by ' + esc(first) + '.</p>';
+      h += '<div class="resume-file"><span class="pdf">PDF</span>';
+      h += '<span class="meta"><b>Resume</b><small>' + esc(rname) + '</small></span></div>';
+      h += '<button class="btn" id="resumeBtn">Download resume</button>';
+      h += '<p class="resume-note">Provided by the freelancer. CrewBoard does not verify its contents.</p>';
+      h += '</div>';
+    }
+
     h += '<div class="panel"><h3>Details</h3><dl class="kv">';
     h += line("Primary role", p.role);
     if ((p.roles || []).length) h += line("Also works as", (p.roles || []).join(", "));
@@ -312,6 +340,28 @@ function renderProfile(p, canContact){
 
     var btn = document.getElementById("reqBtn");
     if (btn) btn.onclick = openBook;
+
+    // Ask Supabase for a 60-second link to the private file. The storage rule
+    // decides whether it is granted - this code only asks.
+    var rbtn = document.getElementById("resumeBtn");
+    if (rbtn) rbtn.onclick = function(){
+      var self = this;
+      self.disabled = true;
+      self.textContent = "Preparing...";
+      sb.storage.from("resumes").createSignedUrl(p.resume_path, 60).then(function(s){
+        self.disabled = false;
+        self.textContent = "Download resume";
+        if (s.error || !s.data){
+          show("bookMsg", (s.error && s.error.message) || "Could not open that file.", "err");
+          return;
+        }
+        window.open(s.data.signedUrl, "_blank", "noopener");
+      })["catch"](function(){
+        self.disabled = false;
+        self.textContent = "Download resume";
+        show("bookMsg", "Could not open that file.", "err");
+      });
+    };
   } catch (err) {
     console.error("renderProfile error:", err);
     document.getElementById("loading").innerHTML =
@@ -361,6 +411,20 @@ async function loadProfile(){
         'Profile not found. <a href="directory.html">Back to the directory</a>.';
       return;
     }
+
+    // profiles_public is a view with a fixed column list and has no resume_path,
+    // and it answers successfully - so the table fallback above never runs.
+    // Fetch the resume path separately, and only for a paying company, so the
+    // path is never requested on behalf of anyone else.
+    if (canContact && !r.data.resume_path){
+      try {
+        var rp = await sb.from("profiles").select("resume_path").eq("id", r.data.id).maybeSingle();
+        if (rp && rp.data) r.data.resume_path = rp.data.resume_path;
+      } catch (eResume) {
+        console.warn("Resume lookup failed:", eResume);
+      }
+    }
+
     renderProfile(r.data, canContact);
   } catch (err) {
     console.error("loadProfile fatal error:", err);
