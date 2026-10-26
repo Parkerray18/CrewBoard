@@ -184,7 +184,7 @@ document.getElementById("coSignupForm").onsubmit = async function(e){
     return;
   }
 
-  var ins = await sb.from("companies").insert({ id: u.id, name: f.name.value, website: f.website.value, paid: false });
+  var ins = await sb.from("companies").insert({ id: u.id, name: f.name.value, website: f.website.value, email: f.email.value, paid: false });
   document.getElementById("coSignupBtn").disabled = false;
   if (ins.error){ show("coSignupMsg", "Account created, but company details failed: " + ins.error.message, "err"); return; }
   show("coSignupMsg", "Account created. Your company is pending plan activation - we will contact you to switch it on.", "ok");
