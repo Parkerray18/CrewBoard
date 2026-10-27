@@ -19,7 +19,7 @@
 // remove it.
 //
 // NOTE: the older pg_net trigger trg_notify_freelancer_of_booking fires on
-// the same INSERT but never delivers — every row in net._http_response has a
+// the same INSERT but never delivers - every row in net._http_response has a
 // NULL status code, meaning the queued requests were never executed. Drop it
 // once the webhook is proven, so only one path runs.
 //
@@ -30,10 +30,11 @@
 // IMPORTANT: the from-address below must be on a domain verified in Resend.
 // If it is not, Resend accepts the call and the mail is silently dropped.
 //
-// IMPORTANT: RESEND_URL is deliberately assembled from separate string
-// pieces. Pasting a complete URL into an editor or a chat window can turn it
-// into a Markdown link — [domain](https://...) — which fetch cannot parse and
-// which surfaces as an unhelpful runtime error. Do not "tidy" this line.
+// IMPORTANT: every URL below - RESEND_URL and SITE - is deliberately
+// assembled from separate string pieces. Pasting a complete URL into an
+// editor or a chat window can turn it into a Markdown link -
+// [domain](https://...) - which fetch cannot parse and which surfaces as an
+// unhelpful runtime error. Do not tidy them into one string.
 
 Deno.serve(async (req) => {
   try {
@@ -80,7 +81,7 @@ Deno.serve(async (req) => {
 
     // --- split URL pieces (see header note - do not tidy) -----------------
     const RESEND_URL = "https:/" + "/api.resend.com" + "/emails";
-    const SITE = "https://crewboard.fit";
+    const SITE = "https:/" + "/crewboard.fit";
 
     // --- shared: send one message ----------------------------------------
     async function sendOne(to, subject, bodyLines) {
@@ -125,7 +126,7 @@ Deno.serve(async (req) => {
       console.error("profiles lookup threw:", String(e));
     }
 
-    // name AND email in one call - the email is what the company sends go to.
+    // name AND email in one call - the email is where company sends go.
     let companyName = "A company";
     let companyEmail = "";
     if (booking.company_id) {
@@ -160,7 +161,7 @@ Deno.serve(async (req) => {
     // =====================================================================
     if (eventType === "INSERT") {
       // --- to the freelancer --------------------------------------------
-      let freelancerResult: any = { skipped: "not attempted" };
+      let freelancerResult = { skipped: "not attempted" };
       let toEmail = "";
       try {
         const userRes = await fetch(
@@ -210,7 +211,7 @@ Deno.serve(async (req) => {
       }
 
       // --- to the company (confirmation) --------------------------------
-      let companyResult: any = { skipped: "not attempted" };
+      let companyResult = { skipped: "not attempted" };
       if (!companyEmail) {
         console.error("no email on companies row", booking.company_id);
         companyResult = { skipped: "no email on companies row" };
@@ -250,8 +251,8 @@ Deno.serve(async (req) => {
     }
 
     const who = freelancerFullName || "The freelancer";
-    let subject: string;
-    let body: string[];
+    let subject = "";
+    let body = [];
 
     if (newStatus === "accepted") {
       subject = who + " accepted your booking request";
